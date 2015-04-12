@@ -1,0 +1,34 @@
+These resuts are from 3D wavelet compression on each slices.
+
+2:1
+    RMS: 0.00165752, max error: 0.0128367
+    RMS: 0.00153295, max error: 0.0125204
+    RMS: 0.00142674, max error: 0.0107615
+    RMS: 0.00136587, max error: 0.0107904
+    RMS: 0.00132154, max error: 0.0101999
+    RMS: 0.00127914, max error: 0.0100089
+    RMS: 0.00124139, max error: 0.0102804
+    RMS: 0.00120726, max error: 0.00911641
+
+
+4:1
+    RMS: 0.00831152, max error: 0.078848
+    RMS: 0.00747728, max error: 0.0674925
+    RMS: 0.00695092, max error: 0.0638785
+    RMS: 0.00661832, max error: 0.0617973
+    RMS: 0.00631647, max error: 0.0609286
+    RMS: 0.0060638, max error: 0.0555918
+    RMS: 0.00584718, max error: 0.055241
+    RMS: 0.00571934, max error: 0.0522016
+
+
+8:1
+    RMS: 0.027519, max error: 0.333537
+    RMS: 0.0245778, max error: 0.298151
+    RMS: 0.0229047, max error: 0.234572
+    RMS: 0.0216765, max error: 0.233936
+    RMS: 0.0205437, max error: 0.21599
+    RMS: 0.0196398, max error: 0.204463
+    RMS: 0.0188661, max error: 0.222479
+    RMS: 0.0185833, max error: 0.208425
+

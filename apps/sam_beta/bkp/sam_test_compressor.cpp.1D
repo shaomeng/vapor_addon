@@ -1,0 +1,133 @@
+
+#include <iostream>
+#include <vector>
+#include <string>
+#include <cstdlib>
+#include <cmath>
+#include "vapor/Compressor.h"
+
+using std::vector;
+using std::string;
+using std::cerr;
+using std::endl;
+
+using namespace VAPoR;
+
+void sam_compare_array( float* arr1, float* arr2, size_t len )
+{
+    cerr << "comparing two arrays with length: " << len << endl;
+    float sum = 0.0;
+    float c = 0.0;
+    float max = 0.0;
+    float tmp;
+    for( size_t i = 0; i < len; i++) {
+//        if( len - i < 20 )
+//            std::cerr << arr1[i] << "\t" << arr2[i] << std::endl;
+        tmp = arr1[i] - arr2[i];
+        if (tmp < 0)    tmp *= -1.0;
+        float y = tmp - c;
+        float t = sum + y;
+        c = (t - sum) - y;
+        sum = t;
+        if (tmp > max)  max = tmp;
+    }
+    sum /= len * 1.0;
+    cerr << "average error: " << sum << ", max error: " << max << endl;
+}
+
+
+void PrintArrays( float* arr1, size_t len1,
+                  float* arr2, size_t len2 )
+// Suppose len1 >= len2
+{
+    for( size_t i = 0; i < len1; i++ ) {
+        cerr << arr1[i] << "\t";
+        if( i <= len2 && arr2 != NULL )
+            cerr << arr2[i] << "\t";
+        cerr << endl;
+    }
+}
+
+int main() {
+
+    size_t onedim = 8;
+    size_t totallen = onedim ;
+    float* src = new float[ totallen ];
+    for( int i = 0; i < totallen; i++ )
+        src[i] = sin(i * 0.1);
+
+    vector<size_t> dims;    
+    dims.push_back( onedim );
+    Compressor c1( dims, "bior1.1", "symh" );
+    SignificanceMap sigmap;
+    
+    size_t dstlen = 4;
+    float* dst = new float[ dstlen ];
+    
+    c1.Compress( src, dst, dstlen, &sigmap );
+    
+    cerr << "sigmap length: " << sigmap.GetNumSignificant() << endl;
+    size_t idx = 0;
+    for( size_t i = 0; i < sigmap.GetNumSignificant(); i++ ) {
+        sigmap.GetCoordinates( i, &idx );
+        cerr << "\t" << idx << endl;
+    }
+
+    float* decompressed = NULL;
+    decompressed = new float[ totallen ];
+    c1.Decompress( dst, decompressed, &sigmap );
+
+    PrintArrays( src, totallen, decompressed, totallen );
+
+/*
+    vector <size_t> cratios;
+    for( int i = 4; i >= 1; i /= 2 )
+        cratios.push_back(i);
+    Compressor* c1 = NULL;
+    vector< size_t > ncoeffs;
+    size_t cvectorsize;
+    vector< SignificanceMap > sigmaps;
+    SetupCompressor( c1, dims, cratios, ncoeffs, cvectorsize, sigmaps );
+    float* coeffs = new float[ cvectorsize ];
+
+    cerr << "Number of collections of coeffs: " << ncoeffs.size() << endl;
+    for ( int i = 0; i < ncoeffs.size(); i++ )
+        cerr << "\t" << ncoeffs[i] << endl;
+	cerr << "Number of Total coeffs: " << cvectorsize << endl;
+    cerr << "Number of significance maps: " << sigmaps.size() << endl;
+
+    int rc;
+    rc = c1 -> Decompose( src, coeffs, ncoeffs, sigmaps );
+    if( rc != 0 ) {
+        cerr << "Decompose error with error code: " << rc << endl;
+    }
+
+    float* rarr = new float[ totallen ];
+
+// Test reconstructing using Lod
+    vector< SignificanceMap > sigmaps2 = sigmaps;
+    sigmaps2.pop_back();
+    size_t cvectorsize2 = 0;
+    for( int i = 0; i < sigmaps2.size(); i++ )
+        cvectorsize2 += sigmaps2[i].GetNumSignificant();
+	cerr << "Number of coeffs for reconstruction: " << cvectorsize2 << endl;
+    float* coeffs2 = new float[cvectorsize2];
+    memcpy( coeffs2, coeffs, sizeof(float) * cvectorsize2 );
+
+//    int rlevel = c1 -> GetNumLevels();
+    rc = c1 -> Reconstruct( coeffs2, rarr, sigmaps2, -1);
+    if( rc != 0 ){
+        cerr << "Reconstruct error with error code: " << rc << endl;
+    }
+*/
+    
+//    sam_compare_array( src, rarr, totallen);    
+
+    if( decompressed )          delete[] decompressed;
+    delete[] src;
+    delete[] dst;
+//    delete[] coeffs;
+//    delete[] coeffs2;
+//    delete[] rarr;
+//    delete c1;
+}

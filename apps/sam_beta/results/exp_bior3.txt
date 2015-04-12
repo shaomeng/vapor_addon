@@ -1,0 +1,250 @@
+Stats of reconstructed arrays at lod: 0
+    RMS: 0.374625, max error: 7.62584
+    RMS: 0.331622, max error: 5.72562
+    RMS: 0.308093, max error: 5.06428
+    RMS: 0.291174, max error: 5.85046
+    RMS: 0.274368, max error: 4.47801
+    RMS: 0.259984, max error: 4.52785
+    RMS: 0.250572, max error: 4.94812
+    RMS: 0.246896, max error: 3.97643
+    RMS: 0.244968, max error: 4.78838
+    RMS: 0.243798, max error: 4.17153
+    RMS: 0.239921, max error: 4.42628
+    RMS: 0.235435, max error: 4.28244
+    RMS: 0.233136, max error: 4.28472
+    RMS: 0.228545, max error: 4.6262
+    RMS: 0.225401, max error: 4.93854
+    RMS: 0.2201, max error: 4.0357
+Stats of arrays using timer interval compression at lod: 0
+    RMS: 1.54423, max error: 156.408
+    RMS: 1.52269, max error: 96.6816
+    RMS: 1.28541, max error: 233.741
+    RMS: 1.25146, max error: 75.6613
+    RMS: 1.12725, max error: 63.6296
+    RMS: 1.10077, max error: 51.0386
+    RMS: 1.01027, max error: 44.1824
+    RMS: 0.999475, max error: 45.1362
+    RMS: 1.04471, max error: 68.3983
+    RMS: 1.0737, max error: 112.439
+    RMS: 1.12292, max error: 106.825
+    RMS: 1.12013, max error: 77.8324
+    RMS: 1.12351, max error: 70.9702
+    RMS: 1.11541, max error: 57.9385
+    RMS: 1.15755, max error: 54.6509
+    RMS: 1.13217, max error: 96.1267
+
+
+Stats of reconstructed arrays at lod: 1
+    RMS: 0.237513, max error: 4.39849
+    RMS: 0.210142, max error: 3.68236
+    RMS: 0.194569, max error: 3.08553
+    RMS: 0.18433, max error: 3.09765
+    RMS: 0.173517, max error: 2.73503
+    RMS: 0.164496, max error: 2.77556
+    RMS: 0.15833, max error: 2.42566
+    RMS: 0.156061, max error: 2.06846
+    RMS: 0.154768, max error: 2.66052
+    RMS: 0.153607, max error: 2.49336
+    RMS: 0.150895, max error: 2.4219
+    RMS: 0.147717, max error: 2.25341
+    RMS: 0.145387, max error: 2.22801
+    RMS: 0.142134, max error: 2.18632
+    RMS: 0.13968, max error: 2.61397
+    RMS: 0.135478, max error: 2.238
+Stats of arrays using timer interval compression at lod: 1
+    RMS: 1.50356, max error: 150.314
+    RMS: 1.50887, max error: 91.0219
+    RMS: 1.25879, max error: 226.047
+    RMS: 1.23325, max error: 75.7199
+    RMS: 1.1083, max error: 58.8044
+    RMS: 1.08793, max error: 51.1015
+    RMS: 0.994309, max error: 44.0501
+    RMS: 0.988558, max error: 44.5528
+    RMS: 1.03191, max error: 64.7246
+    RMS: 1.05234, max error: 109.674
+    RMS: 1.10525, max error: 100.388
+    RMS: 1.10649, max error: 77.0497
+    RMS: 1.10905, max error: 59.3783
+    RMS: 1.10112, max error: 54.4281
+    RMS: 1.14686, max error: 54.7582
+    RMS: 1.10451, max error: 87.9845
+
+
+Stats of reconstructed arrays at lod: 2
+    RMS: 0.135653, max error: 1.97277
+    RMS: 0.12023, max error: 1.75965
+    RMS: 0.111279, max error: 1.7293
+    RMS: 0.105498, max error: 1.7879
+    RMS: 0.0993758, max error: 1.43191
+    RMS: 0.0945054, max error: 1.47472
+    RMS: 0.0907742, max error: 1.42371
+    RMS: 0.089503, max error: 1.32878
+    RMS: 0.0887065, max error: 1.18494
+    RMS: 0.0877932, max error: 1.25733
+    RMS: 0.0861087, max error: 1.29383
+    RMS: 0.0839401, max error: 1.19402
+    RMS: 0.0819151, max error: 1.12996
+    RMS: 0.0797744, max error: 1.19115
+    RMS: 0.0778908, max error: 1.11639
+    RMS: 0.0748576, max error: 0.988032
+Stats of arrays using timer interval compression at lod: 2
+    RMS: 1.45839, max error: 137.74
+    RMS: 1.4854, max error: 82.9747
+    RMS: 1.22281, max error: 198.16
+    RMS: 1.21555, max error: 74.1586
+    RMS: 1.08547, max error: 55.9686
+    RMS: 1.07555, max error: 49.3935
+    RMS: 0.979013, max error: 44.1963
+    RMS: 0.976785, max error: 40.6928
+    RMS: 1.02248, max error: 73.1668
+    RMS: 1.03083, max error: 101.826
+    RMS: 1.09132, max error: 94.6936
+    RMS: 1.08905, max error: 68.5668
+    RMS: 1.09261, max error: 56.5289
+    RMS: 1.08557, max error: 51.2215
+    RMS: 1.13191, max error: 53.8385
+    RMS: 1.09017, max error: 84.7076
+
+
+Stats of reconstructed arrays at lod: 3
+    RMS: 0.0676012, max error: 0.814122
+    RMS: 0.0600646, max error: 0.807817
+    RMS: 0.0557218, max error: 0.664309
+    RMS: 0.0527631, max error: 0.634727
+    RMS: 0.0498632, max error: 0.607175
+    RMS: 0.0475721, max error: 0.616343
+    RMS: 0.0456231, max error: 0.551847
+    RMS: 0.0449995, max error: 0.506215
+    RMS: 0.0446592, max error: 0.508935
+    RMS: 0.0440585, max error: 0.527204
+    RMS: 0.0431054, max error: 0.533128
+    RMS: 0.0417594, max error: 0.48447
+    RMS: 0.0404186, max error: 0.533776
+    RMS: 0.0390195, max error: 0.452809
+    RMS: 0.0377983, max error: 0.513811
+    RMS: 0.0358448, max error: 0.47794
+Stats of arrays using timer interval compression at lod: 3
+    RMS: 1.39596, max error: 101.426
+    RMS: 1.45778, max error: 89.4582
+    RMS: 1.18652, max error: 160.86
+    RMS: 1.18899, max error: 83.622
+    RMS: 1.05578, max error: 55.6108
+    RMS: 1.05414, max error: 40.209
+    RMS: 0.956105, max error: 35.5983
+    RMS: 0.955596, max error: 35.3568
+    RMS: 1.00403, max error: 75.7747
+    RMS: 1.00715, max error: 84.8568
+    RMS: 1.07135, max error: 86.5262
+    RMS: 1.07043, max error: 68.6847
+    RMS: 1.07187, max error: 56.0402
+    RMS: 1.06215, max error: 47.3704
+    RMS: 1.1125, max error: 48.8142
+    RMS: 1.06169, max error: 72.8569
+
+
+Stats of reconstructed arrays at lod: 4
+    RMS: 0.027519, max error: 0.333537
+    RMS: 0.0245778, max error: 0.298151
+    RMS: 0.0229047, max error: 0.234572
+    RMS: 0.0216765, max error: 0.233936
+    RMS: 0.0205437, max error: 0.21599
+    RMS: 0.0196398, max error: 0.204463
+    RMS: 0.0188661, max error: 0.222479
+    RMS: 0.0185833, max error: 0.208425
+    RMS: 0.0184195, max error: 0.202729
+    RMS: 0.0181176, max error: 0.187065
+    RMS: 0.0176462, max error: 0.207941
+    RMS: 0.0169765, max error: 0.178765
+    RMS: 0.0163164, max error: 0.170056
+    RMS: 0.0155858, max error: 0.158615
+    RMS: 0.0148726, max error: 0.148263
+    RMS: 0.013926, max error: 0.162901
+Stats of arrays using timer interval compression at lod: 4
+    RMS: 1.38903, max error: 100.472
+    RMS: 1.45544, max error: 89.344
+    RMS: 1.18251, max error: 162.736
+    RMS: 1.18624, max error: 82.7569
+    RMS: 1.05252, max error: 47.9209
+    RMS: 1.05246, max error: 41.1063
+    RMS: 0.953842, max error: 35.4091
+    RMS: 0.954461, max error: 34.762
+    RMS: 1.00266, max error: 74.4447
+    RMS: 1.00436, max error: 83.7914
+    RMS: 1.0691, max error: 85.1427
+    RMS: 1.06889, max error: 68.1616
+    RMS: 1.0699, max error: 47.2333
+    RMS: 1.06052, max error: 43.5639
+    RMS: 1.11115, max error: 50.2742
+    RMS: 1.05714, max error: 72.8711
+
+
+Stats of reconstructed arrays at lod: 5
+    RMS: 0.00831152, max error: 0.078848
+    RMS: 0.00747728, max error: 0.0674925
+    RMS: 0.00695092, max error: 0.0638785
+    RMS: 0.00661832, max error: 0.0617973
+    RMS: 0.00631647, max error: 0.0609286
+    RMS: 0.0060638, max error: 0.0555918
+    RMS: 0.00584718, max error: 0.055241
+    RMS: 0.00571934, max error: 0.0522016
+    RMS: 0.00564417, max error: 0.0512739
+    RMS: 0.00551376, max error: 0.0493901
+    RMS: 0.00532961, max error: 0.0491415
+    RMS: 0.00509717, max error: 0.0486303
+    RMS: 0.00484736, max error: 0.0425112
+    RMS: 0.00460907, max error: 0.0432993
+    RMS: 0.00429613, max error: 0.0421236
+    RMS: 0.0039833, max error: 0.035682
+Stats of arrays using timer interval compression at lod: 5
+    RMS: 1.38234, max error: 93.0536
+    RMS: 1.45266, max error: 86.2203
+    RMS: 1.1781, max error: 159.21
+    RMS: 1.18421, max error: 85.3717
+    RMS: 1.04968, max error: 44.8397
+    RMS: 1.05129, max error: 40.0119
+    RMS: 0.952257, max error: 34.8115
+    RMS: 0.953201, max error: 34.8161
+    RMS: 1.00152, max error: 77.9621
+    RMS: 1.00226, max error: 79.5137
+    RMS: 1.06786, max error: 77.1781
+    RMS: 1.06713, max error: 73.1452
+    RMS: 1.06817, max error: 47.5462
+    RMS: 1.05858, max error: 43.0234
+    RMS: 1.10944, max error: 49.4603
+    RMS: 1.05557, max error: 73.249
+
+
+Stats of reconstructed arrays at lod: 6
+    RMS: 0.00165752, max error: 0.0128367
+    RMS: 0.00153295, max error: 0.0125204
+    RMS: 0.00142674, max error: 0.0107615
+    RMS: 0.00136587, max error: 0.0107904
+    RMS: 0.00132154, max error: 0.0101999
+    RMS: 0.00127914, max error: 0.0100089
+    RMS: 0.00124139, max error: 0.0102804
+    RMS: 0.00120726, max error: 0.00911641
+    RMS: 0.00119054, max error: 0.00951195
+    RMS: 0.00115899, max error: 0.00926405
+    RMS: 0.00110123, max error: 0.00800031
+    RMS: 0.00104633, max error: 0.00836909
+    RMS: 0.000982802, max error: 0.00754452
+    RMS: 0.000939542, max error: 0.00739336
+    RMS: 0.000851074, max error: 0.00710426
+    RMS: 0.000785924, max error: 0.00617564
+Stats of arrays using timer interval compression at lod: 6
+    RMS: 1.37336, max error: 81.1729
+    RMS: 1.44862, max error: 84.3896
+    RMS: 1.17231, max error: 121.386
+    RMS: 1.18238, max error: 122.04
+    RMS: 1.04641, max error: 40.1448
+    RMS: 1.04936, max error: 39.5493
+    RMS: 0.9501, max error: 33.8515
+    RMS: 0.950918, max error: 34.252
+    RMS: 0.999699, max error: 76.2854
+    RMS: 0.999853, max error: 77.3725
+    RMS: 1.06592, max error: 75.6753
+    RMS: 1.06535, max error: 74.5045
+    RMS: 1.06624, max error: 43.1138
+    RMS: 1.05595, max error: 42.2825
+    RMS: 1.10763, max error: 53.4398
+    RMS: 1.04952, max error: 51.498

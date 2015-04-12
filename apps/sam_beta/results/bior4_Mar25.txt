@@ -1,0 +1,133 @@
+// These results are from applying only time dimension compression
+
+8
+	RMS: 1.31422, max error: 65.6794
+	RMS: 1.29317, max error: 64.6847
+	RMS: 0.856852, max error: 61.7595
+	RMS: 1.35312, max error: 88.6057
+	RMS: 0.813038, max error: 34.266
+	RMS: 1.18344, max error: 48.7528
+	RMS: 0.725929, max error: 20.1955
+	RMS: 1.11023, max error: 45.0901
+	RMS: 0.734555, max error: 43.9302
+	RMS: 1.19684, max error: 105.955
+	RMS: 0.790981, max error: 48.3455
+	RMS: 1.24281, max error: 73.8582
+	RMS: 0.796622, max error: 30.9037
+	RMS: 1.25258, max error: 53.1229
+	RMS: 0.861878, max error: 36.0057
+	RMS: 1.46769, max error: 86.6192
+
+
+9
+	RMS: 0.58758, max error: 44.7308
+	RMS: 0.577409, max error: 43.4926
+	RMS: 0.398771, max error: 21.2571
+	RMS: 0.662483, max error: 41.0867
+	RMS: 0.417235, max error: 17.6667
+	RMS: 0.672848, max error: 28.7809
+	RMS: 0.40638, max error: 10.8492
+	RMS: 0.647287, max error: 29.8199
+	RMS: 0.40704, max error: 19.8912
+	RMS: 0.680362, max error: 53.9257
+	RMS: 0.41882, max error: 24.0363
+	RMS: 0.688166, max error: 30.0243
+	RMS: 0.429907, max error: 14.0815
+	RMS: 0.755278, max error: 33.376
+	RMS: 0.376239, max error: 10.0271
+	RMS: 0.592629, max error: 21.21
+
+
+
+
+10
+	RMS: 0.338893, max error: 11.6342
+	RMS: 0.334118, max error: 11.4379
+	RMS: 0.233838, max error: 5.78493
+	RMS: 0.389153, max error: 15.2964
+	RMS: 0.248125, max error: 6.82932
+	RMS: 0.400332, max error: 13.0388
+	RMS: 0.251362, max error: 7.22544
+	RMS: 0.404255, max error: 11.1115
+	RMS: 0.250825, max error: 9.06141
+	RMS: 0.402308, max error: 15.8
+	RMS: 0.250444, max error: 7.37354
+	RMS: 0.406328, max error: 16.281
+	RMS: 0.251308, max error: 7.61962
+	RMS: 0.417109, max error: 16.3702
+	RMS: 0.231886, max error: 7.09234
+	RMS: 0.38876, max error: 15.3976
+
+
+11
+	RMS: 0.220663, max error: 5.87976
+	RMS: 0.217645, max error: 5.78059
+	RMS: 0.153072, max error: 3.56202
+	RMS: 0.254969, max error: 6.90645
+	RMS: 0.161962, max error: 3.87635
+	RMS: 0.262929, max error: 7.54705
+	RMS: 0.164423, max error: 3.89834
+	RMS: 0.267341, max error: 8.77996
+	RMS: 0.165477, max error: 3.91593
+	RMS: 0.267636, max error: 8.07121
+	RMS: 0.16409, max error: 3.74681
+	RMS: 0.263401, max error: 7.313
+	RMS: 0.162606, max error: 4.37666
+	RMS: 0.274033, max error: 8.16833
+	RMS: 0.152722, max error: 4.07434
+	RMS: 0.255589, max error: 7.55653
+
+
+12
+	RMS: 0.146774, max error: 3.83258
+	RMS: 0.144861, max error: 3.76793
+	RMS: 0.101365, max error: 2.87021
+	RMS: 0.168952, max error: 5.75476
+	RMS: 0.106494, max error: 2.73584
+	RMS: 0.173628, max error: 5.33757
+	RMS: 0.107626, max error: 2.82526
+	RMS: 0.174965, max error: 5.8925
+	RMS: 0.107795, max error: 2.60516
+	RMS: 0.175448, max error: 5.40989
+	RMS: 0.107517, max error: 2.63928
+	RMS: 0.173466, max error: 5.12656
+	RMS: 0.10725, max error: 3.70805
+	RMS: 0.182397, max error: 5.18566
+	RMS: 0.101641, max error: 2.97122
+	RMS: 0.17158, max error: 5.02187
+
+13
+	RMS: 0.0949912, max error: 2.72746
+	RMS: 0.0937696, max error: 2.68146
+	RMS: 0.0649079, max error: 1.68937
+	RMS: 0.107778, max error: 3.34496
+	RMS: 0.0676431, max error: 1.68221
+	RMS: 0.110401, max error: 3.13805
+	RMS: 0.0679862, max error: 1.82886
+	RMS: 0.110425, max error: 3.62323
+	RMS: 0.068221, max error: 1.80048
+	RMS: 0.111202, max error: 3.97414
+	RMS: 0.0677793, max error: 1.76583
+	RMS: 0.109199, max error: 3.30498
+	RMS: 0.0681684, max error: 1.87564
+	RMS: 0.117264, max error: 4.11945
+	RMS: 0.0659688, max error: 1.88765
+	RMS: 0.112278, max error: 4.26493
+
+14
+	RMS: 0.0568638, max error: 2.02673
+	RMS: 0.0561224, max error: 1.99255
+	RMS: 0.038246, max error: 1.3378
+	RMS: 0.0627071, max error: 2.53122
+	RMS: 0.0391701, max error: 1.5565
+	RMS: 0.0639308, max error: 2.64402
+	RMS: 0.0394677, max error: 1.17024
+	RMS: 0.0642172, max error: 2.1499
+	RMS: 0.0397348, max error: 1.63824
+	RMS: 0.0648489, max error: 2.609
+	RMS: 0.0391924, max error: 1.26026
+	RMS: 0.0625178, max error: 2.36366
+	RMS: 0.0393188, max error: 1.87564
+	RMS: 0.0681251, max error: 2.21557
+	RMS: 0.0389719, max error: 1.1816
+	RMS: 0.0670874, max error: 2.3465
