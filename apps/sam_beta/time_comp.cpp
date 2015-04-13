@@ -11,9 +11,9 @@ using namespace VAPoR;
 
 const int NX = 256;
 const int NY = 256;
-const int NZ = 18;
+const int NZ = 256;
 bool KeepAppCoeff = false;
-float cratio = 8.0;
+float cratio = 32.0;
 
 const size_t NumCoeff = (float) (NX*NY*NZ) / cratio;
 
@@ -88,6 +88,7 @@ void test3d(string wavename, const float *srcarr, float *dstarr) {
 	//
 	mw.waverec3(C,L,nlevels,dstarr);	
 
+    delete[] C;
 }
 
 // 
@@ -127,25 +128,6 @@ void test2dp1d(string wavename, const float *srcarr, float *dstarr)
 		int rc = mw.wavedec2(srcarr+i*NX*NY, NX, NY, nlevels2d, C2d[i], L2d);
 		assert (rc>=0);
 	}
-
-// Sam
-//cerr << "Sam: printing the first 10 raw vals of 5 arrays: " << endl;
-//for( int i = 0; i < 5; i++ ) {
-//    for( int j = 0; j < 10; j++ )
-//        cerr << "\taddr: " << i*NX*NY+j << "\t" << srcarr[ i*NX*NY+j ] << endl;
-//    cerr << endl;
-//}
-
-// Sam
-/*
-cerr << "Sam: printing the first 10 coeffs of 5 arrays after 2D DWT: " << endl;
-for( int i = 0; i < 5; i++ ){
-    for( int j = 0; j < 10; j++ ) 
-        cerr << "\t" << C2d[i][j] << endl;
-    cerr << endl;
-}
-*/
-
 
 	//
 	// Now do 1D forward DWT
@@ -251,6 +233,12 @@ for( int i = 0; i < 5; i++ ){
 		assert (rc>=0);
 	}
 	
+    for( int i = 0; i < C2d.size(); i++ )
+        if( C2d[i] )    delete[] C2d[i];
+    for( int i = 0; i < C1d.size(); i++ )
+        if( C1d[i] )    delete[] C1d[i];
+    for( int i = 0; i < buf1d.size(); i++ )
+        if( buf1d[i] )    delete[] buf1d[i];
 }
 	
 
@@ -288,7 +276,7 @@ int main(int argc, char **argv) {
 
 	//assert(argc == 2);
 	//string file = argv[1];
-    string file = "/Users/samuel/Backyard/256cubes/e0chunks/18layer.float";
+    string file = "/Users/samuel/Backyard/256cubes/e0.float";
 
 	float *srcarr = new float[NX*NY*NZ];
 	float *dstarr = new float[NX*NY*NZ];
@@ -329,5 +317,8 @@ int main(int argc, char **argv) {
     cout << "L2 = " << l2 << endl;
     cout << "LMax = " << lmax << endl;
     cout << "RMS = " << rms << endl;
+
+    delete[] srcarr;
+    delete[] dstarr;
 }
 
