@@ -21,8 +21,8 @@ int main(int argc, char* argv[] ) {
         cerr << "\t" << src[i] << endl;
     }
     
-    Compressor c( dims, "bior4.4", "symw" ); 
-//    Compressor c( dims, "bior3.3", "symh" ); 
+//    Compressor c( dims, "bior4.4", "symw" ); 
+    Compressor c( dims, "bior3.3", "symh" ); 
 //    Compressor c( dims, "bior1.1", "symh" ); 
 
     SignificanceMap map;
