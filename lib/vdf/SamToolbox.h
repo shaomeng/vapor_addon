@@ -7,6 +7,7 @@
 #define _SamToolbox_h_
 
 #include <iostream>
+#include <cstdio>
 #include "vapor/Compressor.h"
 
 namespace VAPoR{

@@ -1,6 +1,9 @@
+#include <string>
+
 #include "vapor/SamToolbox.h"
 #include "vapor/SamSlice.h"
 #include "vapor/SamSliceGroup.h"
+
 
 #define NX 256
 #define NY 256
@@ -20,7 +23,7 @@ int main(int argc, char* argv[] ) {
         exit(1);
     }
     string* filenames = new string[ NSLICE ];
-    for( int i = 0; i < NSLICE; i++ ) 
+    for( long long i = 0; i < NSLICE; i++ ) 
         filenames[i] = path + "e" + std::to_string(i) + ".float";
 
     SamToolbox toolbox;

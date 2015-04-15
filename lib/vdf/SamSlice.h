@@ -8,6 +8,7 @@
 #define _SamSlice_h_
 
 #include <iostream>
+#include <cstdio>
 #include "vapor/Compressor.h"
 #include <cassert>
 

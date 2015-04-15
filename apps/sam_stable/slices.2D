@@ -4,14 +4,15 @@
 
 #define NX 256
 #define NY 256
-#define NSLICE 18
+#define NSLICE 9
 
 using namespace VAPoR;
 
 int main(int argc, char* argv[] ) {
 
     int ratio = 0;    
-    string path = "/Users/samuel/Backyard/256cubes/e0slices/";
+//    string path = "/Users/samuel/Backyard/256cubes/e0slices/";
+    string path = "/home/02892/samuelli/tf/256cubes/e0slices/";
     if( argc == 2 )
         ratio = std::stoi( argv[1] );
     else {

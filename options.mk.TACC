@@ -24,8 +24,8 @@ DEBUG=0
 # Specify an alternate C++ and C compiler. The default compiler is 
 # platform dependent
 #
-CXX = icpc
-CC = icc
+CXX = icpc -std=c++11
+CC = icc -std=c++11
 
 # Set BENCHMARK or PROFILE to 1 for framerate diagnostics
 BENCHMARK=0
