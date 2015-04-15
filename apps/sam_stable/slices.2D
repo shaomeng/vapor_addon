@@ -4,7 +4,7 @@
 
 #define NX 256
 #define NY 256
-#define NSLICE 18
+#define NSLICE 9
 
 using namespace VAPoR;
 
@@ -14,10 +14,7 @@ int main(int argc, char* argv[] ) {
     string path = "/Users/samuel/Backyard/256cubes/e0slices/";
     if( argc == 2 )
         ratio = std::stoi( argv[1] );
-    else {
-        cerr << "Wrong number of parameters!" << endl;
-        exit(1);
-    }
+
     string* filenames = new string[ NSLICE ];
     for( int i = 0; i < NSLICE; i++ ) 
         filenames[i] = path + std::to_string(i) + ".float";
@@ -60,25 +57,11 @@ int main(int argc, char* argv[] ) {
     SamSliceGroup group;
     group.Setup( NSLICE, NX*NY, arrs );
 
-// Sam
-//cerr << "Sam: Printing first 10 coeffs after repositioning: " << endl;
-//for( int i = 0; i < 5; i++ ) {
-//    slices[i].Print10Coeffs();
-//    cerr << endl;
-//}
 
-// Sam
-//cerr << "Sam: printing the first 18 elements before 1D DWT: " << endl;
-//group.Print1DRaw();
-
-    rc = group.SetupCompressor1( "bior1.1" );
+    rc = group.SetupCompressor1( "bior4.4" );
     if( rc != 0 )   cerr << "SamSliceGroup::SetupCompressor1() error: " << rc << endl;
     rc = group.Compress1();
     if( rc != 0 )   cerr << "SamSliceGroup::Compress1() error: " << rc << endl;
-
-// Sam
-//cerr << "Sam: printing the first 18 elements after DWT: " << endl;
-//group.Print1DCoeffs();
 
     rc = group.Decompress1( ratio );
     if( rc != 0 )   cerr << "SamSliceGroup::Decompress1() error: " << rc << endl;
@@ -95,6 +78,7 @@ int main(int argc, char* argv[] ) {
         rms.push_back( f );
     }
     cerr << "2+1 compression overall RMS: " << toolbox.CalcRMS( rms ) << endl;
+
     
 
     if( filenames )                         delete[] filenames;
