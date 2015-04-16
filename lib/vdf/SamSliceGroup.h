@@ -47,7 +47,7 @@ protected:
     vector< float* > _raw;     // raw data ro process by this class
 
     vector< float* > _coeffs;       // coefficients from DWT on raw arrays
-    vector< vector< SignificanceMap > >_sigmapGroup;   // significance maps for coeffs
+    vector< vector< SignificanceMap > > _sigmapGroup;   // significance maps for coeffs
 
     vector< float* > _reconstructed;   // reconstructed arrays from Decompress()
 

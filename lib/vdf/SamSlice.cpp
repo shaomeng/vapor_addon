@@ -101,11 +101,13 @@ SamSlice::Compress1()
 int 
 SamSlice::Decompress1( int ratio )
 {
-    if( _rawlen  % ratio != 0 )
-        cerr << "WARNING: requesting compression ratio is not divisible: "
-             << ratio << endl;
+//    if( _rawlen  % ratio != 0 )
+//        cerr << "WARNING: requesting compression ratio is not divisible: "
+//             << ratio << endl;
 
-    float nth = FindCoeffThreshold( ratio ); // nth largest, indexing from 1.
+    float nth = 0.0;
+    if( ratio > 1 )
+        nth = FindCoeffThreshold( ratio ); // nth largest, indexing from 1.
 
     if( _reconstructed == NULL )
         _reconstructed = new float[ _rawlen ];
@@ -126,9 +128,9 @@ SamSlice::Decompress1( int ratio )
     delete[] culledCoeffs;
 
     size_t n = _rawlen / ratio; // num of coeffs to use
-    if( n != inCount )
-        cerr << "WARNING: should use " << n << " coeffs, but actually used : "
-             << inCount << endl;
+//    if( n != inCount )
+//        cerr << "WARNING: should use " << n << " coeffs, but actually used : "
+//             << inCount << endl;
 
     return rc;
 }
