@@ -41,12 +41,14 @@ int
 SamSliceGroup::Compress1( )
 {
     for( int i = 0; i < _coeffs.size(); i++ )
-        if( _coeffs[i] )        delete[] _coeffs[i];
+        if( _coeffs[i] ) {
+            delete[] _coeffs[i];
+            _coeffs[i] = NULL;
+        }
     vector< size_t > dst_arr_len;
     dst_arr_len.push_back( _nslices );
-//    _sigmapGroup.clear();
+
     if( _sigmapGroup )          delete[] _sigmapGroup;
-//    _sigmapGroup.resize( _rawlen );
     _sigmapGroup = new vector< SignificanceMap >[ _rawlen ];
     for( size_t i = 0; i < _rawlen; i++ )
         _sigmapGroup[i].resize( 1 );
@@ -191,6 +193,20 @@ SamSliceGroup::FreeReconstructed( int i )
     if( _reconstructed[i] ) {
             delete[] _reconstructed[i];
             _reconstructed[i] = NULL;
+    }
+}
+
+void
+SamSliceGroup::FreeCoeffs()
+{
+    for( size_t i = 0; i < _coeffs.size(); i++ )
+        if( _coeffs[i] ) {
+            delete[] _coeffs[i];
+            _coeffs[i] = NULL;
+        }
+    if( _sigmapGroup ) {
+        delete[] _sigmapGroup;
+        _sigmapGroup = NULL;
     }
 }
 

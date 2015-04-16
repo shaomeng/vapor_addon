@@ -184,10 +184,29 @@ SamSlice::FindCoeffThreshold( int ratio )
 }
 
 void
-SamSlice::ReplaceCoeffs( float* replace )
+SamSlice::ReplaceCoeffs( const float* replace )
 {
-    for( size_t i = 0; i < _rawlen; i++ )
-        _coeffs[i] = replace[i];
+    if( _coeffs == NULL )
+        _coeffs = new float[ _rawlen ];
+//    for( size_t i = 0; i < _rawlen; i++ )
+//        _coeffs[i] = replace[i];
+    std::memcpy( (void*)_coeffs, (void*)replace, sizeof(float) * _rawlen );
+}
+
+void
+SamSlice::FreeRaw()
+{
+    if( _raw )              { delete[] _raw; _raw = NULL; }
+}
+void 
+SamSlice::FreeCoeffs()
+{
+    if( _coeffs )           { delete[] _coeffs; _coeffs = NULL; }
+}
+void
+SamSlice::FreeReconstructed()
+{
+    if( _reconstructed )    { delete[] _reconstructed; _reconstructed = NULL; }
 }
 
 void

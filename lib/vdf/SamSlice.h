@@ -28,7 +28,10 @@ public:
     int Compress1();
     int Decompress1(int ratio);
     void PutCoeffsInPosition();
-    void ReplaceCoeffs( float* replacement );
+    void ReplaceCoeffs( const float* replacement );
+    void FreeRaw();
+    void FreeCoeffs();
+    void FreeReconstructed();
 
 
     float* GetRawPtr()      { return _raw; };
@@ -40,6 +43,7 @@ public:
     void Print10Coeffs();
     void Print10Raws();
 
+
 protected:
     string _filename;
     vector< size_t > _dims;
@@ -49,7 +53,6 @@ protected:
     size_t _rawlen;
 
     float* _coeffs;
-
     vector< SignificanceMap > _sigmaps; // This vector is supposed to have only 1 element.
 
     float* _reconstructed;

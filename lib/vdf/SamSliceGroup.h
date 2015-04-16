@@ -33,6 +33,7 @@ public:
     float* GetReconstructedPtr( int i );
 
     void FreeReconstructed( int i );
+    void FreeCoeffs( );
 
     void Print1DRaw();
     void Print1DCoeffs();
@@ -47,7 +48,7 @@ protected:
     vector< float* > _raw;                              // raw data ro process by this class
 
     vector< float* > _coeffs;                           // coefficients from DWT on raw arrays
-    vector< SignificanceMap >*  _sigmapGroup;   // significance maps for coeffs
+    vector< SignificanceMap >*  _sigmapGroup;           // significance maps for coeffs
 
     vector< float* > _reconstructed;                    // reconstructed arrays from Decompress()
 

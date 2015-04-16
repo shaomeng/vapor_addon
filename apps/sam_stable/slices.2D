@@ -44,6 +44,9 @@ int main(int argc, char* argv[] ) {
         float* reconstructed = slices[i].GetReconstructedPtr();
         float f = toolbox.CompareArrays( raw, reconstructed, NX*NY, false );
         rms.push_back( f );
+        
+        slices[i].FreeRaw();
+        slices[i].FreeReconstructed();
     }
     cerr << "compression on slices has overall RMS: " << toolbox.CalcRMS( rms ) << endl;
     
@@ -55,22 +58,27 @@ int main(int argc, char* argv[] ) {
         arrs.push_back( slices[i].GetCoeffsPtr() );
     }
 
-    SamSliceGroup group;
-    group.Setup( NSLICE, NX*NY, arrs );
+    SamSliceGroup* group = new SamSliceGroup();
+    group -> Setup( NSLICE, NX*NY, arrs );
 
-
-    rc = group.SetupCompressor1( "bior4.4" );
+    rc = group -> SetupCompressor1( "bior4.4" );
     if( rc != 0 )   cerr << "SamSliceGroup::SetupCompressor1() error: " << rc << endl;
-    rc = group.Compress1();
+    rc = group -> Compress1();
     if( rc != 0 )   cerr << "SamSliceGroup::Compress1() error: " << rc << endl;
-
-    rc = group.Decompress1( ratio );
+    rc = group -> Decompress1( ratio );
     if( rc != 0 )   cerr << "SamSliceGroup::Decompress1() error: " << rc << endl;
+
+    group -> FreeCoeffs();
+    for( int i = 0; i < NSLICE; i++ ) {
+        slices[i].ReplaceCoeffs( group -> GetReconstructedPtr(i) );
+        group -> FreeReconstructed( i );
+    }
+    
+    delete group;
 
     rms.clear();
     for( int i = 0; i < NSLICE; i++ ) {
-        slices[i].ReplaceCoeffs( group.GetReconstructedPtr(i) );
-        group.FreeReconstructed( i );
+        slices[i].ReadFile( filenames[i] );
         rc = slices[i].Decompress1( 1 );
         if( rc != 0 )   cerr << "Decompress1() error at slice: " << i << endl;
         float* raw = slices[i].GetRawPtr();
