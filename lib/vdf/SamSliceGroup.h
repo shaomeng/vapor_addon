@@ -40,16 +40,16 @@ public:
 protected:
 
     int _nslices;
-    size_t _rawlen;            // length of each raw data array
+    size_t _rawlen;                                     // length of each raw data array
 
     Compressor* _c1;
 
-    vector< float* > _raw;     // raw data ro process by this class
+    vector< float* > _raw;                              // raw data ro process by this class
 
-    vector< float* > _coeffs;       // coefficients from DWT on raw arrays
-    vector< vector< SignificanceMap > > _sigmapGroup;   // significance maps for coeffs
+    vector< float* > _coeffs;                           // coefficients from DWT on raw arrays
+    vector< SignificanceMap >*  _sigmapGroup;   // significance maps for coeffs
 
-    vector< float* > _reconstructed;   // reconstructed arrays from Decompress()
+    vector< float* > _reconstructed;                    // reconstructed arrays from Decompress()
 
     
 

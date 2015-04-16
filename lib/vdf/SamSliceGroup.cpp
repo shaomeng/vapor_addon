@@ -5,6 +5,7 @@ using namespace VAPoR;
 SamSliceGroup::SamSliceGroup()
 {
     _c1 = NULL;
+    _sigmapGroup = NULL;
 }
 
 void
@@ -28,22 +29,25 @@ SamSliceGroup::Setup( int nfiles, size_t rawlen,
 SamSliceGroup::~SamSliceGroup()
 {
     for( int i = 0; i < _coeffs.size(); i++ )
-        if( _coeffs[i] )      delete[] _coeffs[i];
+        if( _coeffs[i] )            delete[] _coeffs[i];
     for( int i = 0; i < _reconstructed.size(); i++ )
-        if( _reconstructed[i] )    delete[] _reconstructed[i];
+        if( _reconstructed[i] )     delete[] _reconstructed[i];
+    if( _sigmapGroup )              delete[] _sigmapGroup;
 
-    if( _c1 )                delete _c1; 
+    if( _c1 )                       delete _c1; 
 }
 
 int
 SamSliceGroup::Compress1( )
 {
     for( int i = 0; i < _coeffs.size(); i++ )
-        if( _coeffs[i] )      delete[] _coeffs[i];
+        if( _coeffs[i] )        delete[] _coeffs[i];
     vector< size_t > dst_arr_len;
     dst_arr_len.push_back( _nslices );
-    _sigmapGroup.clear();
-    _sigmapGroup.resize( _rawlen );
+//    _sigmapGroup.clear();
+    if( _sigmapGroup )          delete[] _sigmapGroup;
+//    _sigmapGroup.resize( _rawlen );
+    _sigmapGroup = new vector< SignificanceMap >[ _rawlen ];
     for( size_t i = 0; i < _rawlen; i++ )
         _sigmapGroup[i].resize( 1 );
 
