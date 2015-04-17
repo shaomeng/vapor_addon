@@ -105,29 +105,32 @@ SamSlice::Decompress1( int ratio )
 //        cerr << "WARNING: requesting compression ratio is not divisible: "
 //             << ratio << endl;
 
-    float nth = 0.0;
-    if( ratio > 1 )
-        nth = FindCoeffThreshold( ratio ); // nth largest, indexing from 1.
-
     if( _reconstructed == NULL )
         _reconstructed = new float[ _rawlen ];
-    float* culledCoeffs = new float[ _rawlen ];
-    size_t inCount = 0;
+    int rc = 0;
 
-    for( size_t i = 0; i < _rawlen; i++ ) {
-        if( _coeffs[i] >= nth || _coeffs[i] <= -1.0 * nth ) {
-            culledCoeffs[i] = _coeffs[i];
-            inCount++;
+    if( ratio > 1 ) {   // perform actual compression
+        float nth = FindCoeffThreshold( ratio ); // nth largest, indexing from 1.
+        float* culledCoeffs = new float[ _rawlen ];
+        size_t inCount = 0;
+
+        for( size_t i = 0; i < _rawlen; i++ ) {
+            if( _coeffs[i] >= nth || _coeffs[i] <= -1.0 * nth ) {
+                culledCoeffs[i] = _coeffs[i];
+                inCount++;
+            }
+            else
+                culledCoeffs[i] = 0.0;
         }
-        else
-            culledCoeffs[i] = 0.0;
+
+        rc = _c1 -> Reconstruct( culledCoeffs, _reconstructed, _sigmaps, -1 );
+        delete[] culledCoeffs;
     }
+    else            // Decompress using the same coeffs, no compression
+        rc = _c1 -> Reconstruct( _coeffs, _reconstructed, _sigmaps, -1 );
 
-    int rc = _c1 -> Reconstruct( culledCoeffs, _reconstructed, _sigmaps, -1 );
-    
-    delete[] culledCoeffs;
 
-    size_t n = _rawlen / ratio; // num of coeffs to use
+//    size_t n = _rawlen / ratio; // num of coeffs to use
 //    if( n != inCount )
 //        cerr << "WARNING: should use " << n << " coeffs, but actually used : "
 //             << inCount << endl;
@@ -190,7 +193,7 @@ SamSlice::ReplaceCoeffs( const float* replace )
         _coeffs = new float[ _rawlen ];
 //    for( size_t i = 0; i < _rawlen; i++ )
 //        _coeffs[i] = replace[i];
-    std::memcpy( (void*)_coeffs, (void*)replace, sizeof(float) * _rawlen );
+    memcpy( (void*)_coeffs, (void*)replace, sizeof(float) * _rawlen );
 }
 
 void

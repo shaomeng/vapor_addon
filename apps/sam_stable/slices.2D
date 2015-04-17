@@ -10,11 +10,11 @@ using namespace VAPoR;
 
 int main(int argc, char* argv[] ) {
 
-    int ratio = 0;    
+    vector< int > cratios;
+    for( int i = 1; i < argc; i++ )
+        cratios.push_back( stoi( argv[i] ) );
 //    string path = "/Users/samuel/Backyard/256cubes/e0slices/";
     string path = "/home/02892/samuelli/tf/256cubes/e0slices/";
-    if( argc == 2 )
-        ratio = std::stoi( argv[1] );
 
     string* filenames = new string[ NSLICE ];
     for( long long i = 0; i < NSLICE; i++ ) 
@@ -30,65 +30,118 @@ int main(int argc, char* argv[] ) {
     vector< SamSlice > slices( NSLICE );
     vector< float> rms;
 
+//
+// Compress on each slice
+//
     for( int i = 0; i < NSLICE; i++ ) {
         slices[i].ReadFile( filenames[i] );
         rc = slices[i].SetupCompressor1( dims, "bior4.4" );
         if( rc != 0 ) cerr << "setup compressor error: " << rc << endl;
         rc = slices[i].Compress1();
         if( rc != 0 )   cerr << "Compress error: " << rc << endl;
-//        else            cerr << "compression success on slice " << i << endl;
-
-        rc = slices[i].Decompress1( ratio );
-        if( rc != 0 )   cerr << "Decompress error: " << rc << endl;
-        float* raw = slices[i].GetRawPtr();
-        float* reconstructed = slices[i].GetReconstructedPtr();
-        float f = toolbox.CompareArrays( raw, reconstructed, NX*NY, false );
-        rms.push_back( f );
-        
-        slices[i].FreeRaw();
-        slices[i].FreeReconstructed();
     }
-    cerr << "compression on slices has overall RMS: " << toolbox.CalcRMS( rms ) << endl;
+
+// 
+// Test RMS for each compression ratio
+//
+    for( int c = 0; c < cratios.size(); c++ ) {
+        int ratio = cratios[c];
+        cerr << "2D decompression on ratio: " << ratio << endl;
     
+        rms.clear();
+        for( int i = 0; i < NSLICE; i++ ) {
+            rc = slices[i].Decompress1( ratio );
+            if( rc != 0 )   cerr << "Decompress error: " << rc << endl;
+            float* raw = slices[i].GetRawPtr();
+            float* reconstructed = slices[i].GetReconstructedPtr();
+            float f = toolbox.CompareArrays( raw, reconstructed, NX*NY, false );
+            rms.push_back( f );
+        }
+        cerr << "\t2D compression RMS: " << toolbox.CalcRMS( rms ) << endl;
+    }
 
-
-    vector< float* > arrs;
     for( int i = 0; i < NSLICE; i++ ) {
         slices[i].PutCoeffsInPosition();
-        arrs.push_back( slices[i].GetCoeffsPtr() );
+        slices[i].FreeReconstructed();
     }
-
+    
+//
+// Pass the coeffs to perform temporal compression
+//
+    vector< float* > arrs;
+    for( int i = 0; i < NSLICE; i++ )
+        arrs.push_back( slices[i].GetCoeffsPtr() );
     SamSliceGroup* group = new SamSliceGroup();
     group -> Setup( NSLICE, NX*NY, arrs );
+
+    for( int i = 0; i < NSLICE; i++ )
+        slices[i].FreeCoeffs();
 
     rc = group -> SetupCompressor1( "bior4.4" );
     if( rc != 0 )   cerr << "SamSliceGroup::SetupCompressor1() error: " << rc << endl;
     rc = group -> Compress1();
     if( rc != 0 )   cerr << "SamSliceGroup::Compress1() error: " << rc << endl;
-    rc = group -> Decompress1( ratio );
-    if( rc != 0 )   cerr << "SamSliceGroup::Decompress1() error: " << rc << endl;
+    
+    for( int i = 0; i < NSLICE; i++ )
+        group -> FreeRaw( i );
 
-    group -> FreeCoeffs();
-    for( int i = 0; i < NSLICE; i++ ) {
-        slices[i].ReplaceCoeffs( group -> GetReconstructedPtr(i) );
-        group -> FreeReconstructed( i );
+//
+// Test temporal compression on different ratios
+// Iterate on different compression ratios 
+//
+    for( int c = 0; c < cratios.size(); c++ ) {
+        int ratio = cratios[c];
+        cerr << "reconstructing using compression ratio: " << ratio << endl;
+        rc = group -> Decompress1( ratio );
+        if( rc != 0 )   cerr << "SamSliceGroup::Decompress1() error: " << rc << endl;
+
+        // 
+        // Iterate on each time slice
+        //
+        rms.clear();
+        for( int i = 0; i < NSLICE; i++ ) {
+            slices[i].ReplaceCoeffs( group -> GetReconstructedPtr( i ) );
+            group -> FreeReconstructed( i );
+            rc = slices[i].Decompress1( 1 );
+            if( rc != 0 )   cerr << "Decompress1() error at slice: " << i << endl;
+            float* raw = slices[i].GetRawPtr();
+            float* reconstructed = slices[i].GetReconstructedPtr( );
+            float f = toolbox.CompareArrays( raw, reconstructed, NX*NY, false );
+            rms.push_back( f );
+
+            slices[i].FreeCoeffs();
+            slices[i].FreeReconstructed();
+        }
+        cerr << "\t2+1 compression overall RMS: " << toolbox.CalcRMS( rms ) << endl;
     }
+
+
     
     delete group;
 
-    rms.clear();
-    for( int i = 0; i < NSLICE; i++ ) {
-        slices[i].ReadFile( filenames[i] );
-        rc = slices[i].Decompress1( 1 );
-        if( rc != 0 )   cerr << "Decompress1() error at slice: " << i << endl;
-        float* raw = slices[i].GetRawPtr();
-        float* reconstructed = slices[i].GetReconstructedPtr( );
-        float f = toolbox.CompareArrays( raw, reconstructed, NX*NY, false );
-        rms.push_back( f );
-    }
-    cerr << "2+1 compression overall RMS: " << toolbox.CalcRMS( rms ) << endl;
-
-    
-
     if( filenames )                         delete[] filenames;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

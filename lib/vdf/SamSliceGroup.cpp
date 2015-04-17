@@ -14,7 +14,7 @@ SamSliceGroup::Setup( int nfiles, size_t rawlen,
 {
     _nslices = nfiles;
     _rawlen = rawlen;
-    _raw = raw;
+//    _raw = raw;
 
     if( raw.size() != _nslices ){
         cerr << "ERROR: SamSliceGroup::SamSliceGroup() expecting " << _nslices
@@ -24,6 +24,12 @@ SamSliceGroup::Setup( int nfiles, size_t rawlen,
 
     _coeffs.resize( rawlen, NULL);
     _reconstructed.resize( nfiles, NULL );
+
+    _raw.resize( _nslices, NULL );
+    for( int i = 0; i < _raw.size(); i++ ) {
+        _raw[i] = new float[ _rawlen ];
+        memcpy( (void*)_raw[i], (void*)raw[i], sizeof(float) * rawlen );
+    }
 }
 
 SamSliceGroup::~SamSliceGroup()
@@ -79,13 +85,16 @@ SamSliceGroup::Decompress1( int ratio )
 //    if( nCoeffs % ratio != 0 )
 //        cerr << "WARNING: requesting compression ratio is not divisible: " 
 //             << ratio << endl;
-    float nth = FindCoeffThreshold( ratio ); // use coeffs larger than nth.
+
+    float nth = 0.0;
+    if( ratio > 1 )
+        nth = FindCoeffThreshold( ratio ); // use coeffs larger than nth.
 
 
-    for( int i = 0; i < _nslices; i++ ) {
-        if( _reconstructed[i] )     delete[] _reconstructed[i];
-        _reconstructed[i] = new float[ _rawlen ];
-    }
+    for( int i = 0; i < _nslices; i++ ) 
+        if( _reconstructed[i] == NULL )
+            _reconstructed[i] = new float[ _rawlen ];
+    
 
     float src[ _nslices], dst[ _nslices ];
     int rc;
@@ -108,10 +117,9 @@ SamSliceGroup::Decompress1( int ratio )
             cerr << "Reconstruct() error with code: " << rc << endl;
             return 1;
         }
-        else{
+        else
             for( int j = 0; j < _nslices; j++ )
                 _reconstructed[j][i] = dst[j];        
-        }
 
     }   
 
@@ -193,6 +201,16 @@ SamSliceGroup::FreeReconstructed( int i )
     if( _reconstructed[i] ) {
             delete[] _reconstructed[i];
             _reconstructed[i] = NULL;
+    }
+}
+
+void
+SamSliceGroup::FreeRaw( int i )
+{
+    assert( i < _raw.size() );
+    if( _raw[i] ) {
+            delete[] _raw[i];
+            _raw[i] = NULL;
     }
 }
 

@@ -34,6 +34,7 @@ public:
 
     void FreeReconstructed( int i );
     void FreeCoeffs( );
+    void FreeRaw( int i );
 
     void Print1DRaw();
     void Print1DCoeffs();
