@@ -10,6 +10,11 @@ using namespace VAPoR;
 
 int main(int argc, char* argv[] ) {
 
+    if( argc < 2 ) {
+        cerr << "Please specify the compression ratios to test!" << endl;
+        exit(1);
+    }
+
     vector< int > cratios;
     for( int i = 1; i < argc; i++ )
         cratios.push_back( stoi( argv[i] ) );
@@ -46,7 +51,7 @@ int main(int argc, char* argv[] ) {
 //
     for( int c = 0; c < cratios.size(); c++ ) {
         int ratio = cratios[c];
-        cerr << "2D decompression on ratio: " << ratio << endl;
+        cerr << "2D decompression using ratio: " << ratio << endl;
     
         rms.clear();
         for( int i = 0; i < NSLICE; i++ ) {
@@ -57,7 +62,7 @@ int main(int argc, char* argv[] ) {
             float f = toolbox.CompareArrays( raw, reconstructed, NX*NY, false );
             rms.push_back( f );
         }
-        cerr << "\t2D compression RMS: " << toolbox.CalcRMS( rms ) << endl;
+        cerr << "\tRMS: " << toolbox.CalcRMS( rms ) << endl;
     }
 
     for( int i = 0; i < NSLICE; i++ ) {
@@ -91,7 +96,7 @@ int main(int argc, char* argv[] ) {
 //
     for( int c = 0; c < cratios.size(); c++ ) {
         int ratio = cratios[c];
-        cerr << "reconstructing using compression ratio: " << ratio << endl;
+        cerr << "2D + 1D reconstruction using ratio: " << ratio << endl;
         rc = group -> Decompress1( ratio );
         if( rc != 0 )   cerr << "SamSliceGroup::Decompress1() error: " << rc << endl;
 
@@ -112,7 +117,7 @@ int main(int argc, char* argv[] ) {
             slices[i].FreeCoeffs();
             slices[i].FreeReconstructed();
         }
-        cerr << "\t2+1 compression overall RMS: " << toolbox.CalcRMS( rms ) << endl;
+        cerr << "\tRMS: " << toolbox.CalcRMS( rms ) << endl;
     }
 
 
