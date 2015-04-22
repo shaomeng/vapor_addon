@@ -4,16 +4,17 @@
 #include <cstdio>
 #include <cassert>
 #include <vector>
+#include <algorithm>
 
 #include "vapor/MatWaveWavedec.h"
 using namespace VAPoR;
 
 
-const int NX = 256;
-const int NY = 256;
-const int NZ = 256;
+const int NX = 288;
+const int NY = 288;
+const int NZ = 288;
 bool KeepAppCoeff = false;
-float cratio = 32.0;
+float cratio = 512.0;
 
 const size_t NumCoeff = (float) (NX*NY*NZ) / cratio;
 
@@ -274,9 +275,9 @@ void compute_error(
 
 int main(int argc, char **argv) {
 
-	//assert(argc == 2);
-	//string file = argv[1];
-    string file = "/Users/samuel/Backyard/256cubes/e0.float";
+	assert(argc == 2);
+	string file = argv[1];
+//    string file = "/Users/samuel/Backyard/256cubes/e0.float";
 
 	float *srcarr = new float[NX*NY*NZ];
 	float *dstarr = new float[NX*NY*NZ];
