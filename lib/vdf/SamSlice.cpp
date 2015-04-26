@@ -196,6 +196,15 @@ SamSlice::ReplaceCoeffs( const float* replace )
     memcpy( (void*)_coeffs, (void*)replace, sizeof(float) * _rawlen );
 }
 
+float*
+SamSlice::GetRawPtr()
+{
+    if( _raw != NULL )      return _raw;
+    else{
+        ReadFile( _filename );
+        return _raw;
+    }
+}
 void
 SamSlice::FreeRaw()
 {

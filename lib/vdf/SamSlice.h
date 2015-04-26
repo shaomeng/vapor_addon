@@ -34,7 +34,7 @@ public:
     void FreeReconstructed();
 
 
-    float* GetRawPtr()      { return _raw; };
+    float* GetRawPtr();
     float* GetCoeffsPtr()   { return _coeffs; }
     float* GetReconstructedPtr()                { return _reconstructed; }
 
