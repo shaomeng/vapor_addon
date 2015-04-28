@@ -126,19 +126,42 @@ SamSlice2::FindCoeffThreshold( int ratio )
 void
 SamSlice2::UpdateCoeffs( const float* update )
 {
-    if( _C == NULL )
-        _C = new float[ _clen ];
+    if( _C == NULL )    _C = new float[ _clen ];
     memcpy( (void*)_C, (void*)update, sizeof(float) * _clen );
 }
+void
+SamSlice2::HandoverCoeffs( float* anotherPtr )
+{
+    assert( anotherPtr == NULL );
+    anotherPtr = _C;
+    _C = NULL;
+}
 
-/*
 float*
 SamSlice2::GetRawPtr()
 {
     if( _raw != NULL )      return _raw;
     else{
-        ReadFile( _filename );
-        return _raw;
+        cerr << "Raw pointer is NULL when asked" << endl;
+        return NULL;
+    }
+}
+float*
+SamSlice2::GetCoeffsPtr()
+{
+    if( _C != NULL )      return _C;
+    else{
+        cerr << "Coeffs pointer is NULL when asked" << endl;
+        return NULL;
+    }
+}
+float*
+SamSlice2::GetReconstructedPtr()
+{
+    if( _reconstructed != NULL )      return _reconstructed;
+    else{
+        cerr << "Reconstructed pointer is NULL when asked" << endl;
+        return NULL;
     }
 }
 void
@@ -149,7 +172,7 @@ SamSlice2::FreeRaw()
 void 
 SamSlice2::FreeCoeffs()
 {
-    if( _coeffs )           { delete[] _coeffs; _coeffs = NULL; }
+    if( _C )           { delete[] _C; _C = NULL; }
 }
 void
 SamSlice2::FreeReconstructed()
@@ -160,14 +183,15 @@ SamSlice2::FreeReconstructed()
 void
 SamSlice2::Print10Coeffs()
 {
+    cerr << "here are the first 10 coeffs: " << endl;
     for( int i = 0; i < 10; i++ )
-        cerr << "\t" << _coeffs[i] << endl;
+        cerr << "\t" << _C[i] << endl;
 }
 
 void
 SamSlice2::Print10Raws()
 {
+    cerr << "here are the first 10 raw inputs: " << endl;
     for( int i = 0; i < 10; i++ )
         cerr << "\t" << _raw[i] << endl;
 }
-*/

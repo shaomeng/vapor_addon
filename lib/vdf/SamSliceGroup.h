@@ -6,8 +6,8 @@
 //      4) restores the coefficients by performing 1D IDWT
 
 
-#ifndef _SamSliceGrouop_h_
-#define _SamSliceGrouop_h_
+#ifndef _SamSliceGroup_h_
+#define _SamSliceGroup_h_
 
 #include <iostream>
 #include "vapor/Compressor.h"

@@ -109,33 +109,18 @@ SamToolbox::CompareArrays(
     size_t len,
     bool   print )
 {
-/*
-    cerr << "comparing two arrays with length: " << len << endl;
-    cerr << "The first ten elements are: " << endl;
-    for( int i = 0; i < 10; i++ )
-        cerr << "\t" << arr1[i] << "\t" << arr2[i] << endl; 
-    cerr << "The last ten elements are: " << endl;
-    for( int i = 10; i > 1; i-- )
-        cerr << "\t" << arr1[len-i] << "\t" << arr2[len-i] << endl; 
-*/
-
-    float sum = 0.0;
-    float c = 0.0;
-    float max = 0.0;
-    float v1, v2;
-    float tmp;
+    double sum = 0.0;
+    double c = 0.0;
+    double max = 0.0;
+    double tmp;
     for( size_t i = 0; i < len; i++) {
-        tmp = arr1[i] - arr2[i];
+        tmp = (double)arr1[i] - (double)arr2[i];
         if (tmp < 0)    tmp *= -1.0;
-        float y = tmp * tmp - c;
-        float t = sum + y;
+        double y = tmp * tmp - c;
+        double t = sum + y;
         c = (t - sum) - y;
         sum = t;
-        if (tmp > max){
-            max = tmp;
-            v1 = arr1[i];
-            v2 = arr2[i];
-        }
+        if (tmp > max)      max = tmp;
     }
     sum /= len * 1.0;
     sum = sqrt( sum );

@@ -42,7 +42,7 @@ void test3d(string wavename, const float *srcarr, float *dstarr) {
 	float *C = new float[clen];
 	assert(C);
 
-	size_t L[(21*nlevels)+6];
+	size_t L[ (21*nlevels) + 6];
 
 	// Compute the bookkeeping vector, L.
 	//
