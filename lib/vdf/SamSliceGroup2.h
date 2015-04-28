@@ -24,9 +24,8 @@ public:
     SamSliceGroup2( string wavename, size_t rawlen, size_t nslices );
     ~SamSliceGroup2();
 
-    // Expose the ith raw pointer.
     // The purpose was to let SamSlice2 hand it over.
-    float* ExposeRawPtr( size_t i );
+    void UpdateRawPtr( size_t i, float* ptr  );
 
     void Decompose();
 

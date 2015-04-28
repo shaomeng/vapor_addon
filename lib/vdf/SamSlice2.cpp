@@ -129,12 +129,12 @@ SamSlice2::UpdateCoeffs( const float* update )
     if( _C == NULL )    _C = new float[ _clen ];
     memcpy( (void*)_C, (void*)update, sizeof(float) * _clen );
 }
-void
-SamSlice2::HandoverCoeffs( float* anotherPtr )
+float*
+SamSlice2::HandoverCoeffs(  )
 {
-    assert( anotherPtr == NULL );
-    anotherPtr = _C;
+    float* c = _C;
     _C = NULL;
+    return c;
 }
 
 float*

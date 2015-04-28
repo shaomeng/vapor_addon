@@ -32,21 +32,21 @@ SamSliceGroup2::~SamSliceGroup2()
     if( _mw )                       delete _mw;
 }
 
-float*
-SamSliceGroup2::ExposeRawPtr( size_t i )
+void
+SamSliceGroup2::UpdateRawPtr( size_t i, float* ptr )
 {
     if( _raw[i] ) {
-        cerr << "WARNING! raw pointer of SliceGroup is not NULL!" << endl;
+        cerr << "WARNING! raw pointer of SliceGroup is not NULL when updating" << endl;
         delete[] _raw[i];
     }
-    return _raw[i];
+    _raw[i] = ptr;
 }
 
 void
 SamSliceGroup2::Decompose( )
 {
     for( size_t i = 0; i < _raw.size(); i++ )
-        assert( _raw[i] != NULL );
+        assert( _raw[i] );
     for( int i = 0; i < _C1d.size(); i++ )
         if( _C1d[i] ) {
             delete[] _C1d[i];

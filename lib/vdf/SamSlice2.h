@@ -29,7 +29,7 @@ public:
     int Reconstruct(int ratio);
 
     void UpdateCoeffs( const float* update );
-    void HandoverCoeffs( float* anotherPtr );
+    float* HandoverCoeffs( );
 
     void FreeRaw();
     void FreeCoeffs();
