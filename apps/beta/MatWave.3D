@@ -1,1 +1,50 @@
-sd
+#include "vapor/SamSlice2.h"
+#include "vapor/SamToolbox.h"
+
+#define NX 256
+#define NY 256
+#define NZ 256
+#define NSLICE 9
+
+using namespace VAPoR;
+
+int main( int argc, char* argv[] )
+{
+    if( argc < 2 ) {
+        cerr << "Please specify the compression ratios to test!" << endl;
+        exit(1);
+    }
+
+    string path = "/home/02892/samuelli/tf/256cubes/";
+    string* filenames = new string[ NSLICE ];
+    for( long long i = 0; i < NSLICE; i++ )
+        filenames[i] = path + "e" + to_string(i) + ".float";
+
+    vector< int > cratios;
+    for( int i = 1; i < argc; i++ )
+        cratios.push_back( stoi( argv[i] ) );
+    int ratio = 4;
+    string wavename = "bior4.4";
+
+    SamSlice2* slices = new SamSlice2[ NSLICES ];
+
+    for( int i = 0; i < NSLICES; i++ ) {
+        slices[i] = new SamSlice2( filenames[i], wavename, NX, NY, NZ );
+        slices[i] -> Decompose();
+        slices[i] -> Reconstruct( ratio );
+    }
+
+
+    SamSlice2 s( filename, wavename, NX, NY, NZ );
+    s.Decompose();
+    s.Reconstruct( ratio );
+
+/*
+    SamToolbox toolbox;
+    float* rawPtr = s.GetRawPtr();
+    float* reconstructedPtr = s.GetReconstructedPtr();
+    assert( rawPtr != NULL );
+    assert( reconstructedPtr != NULL );
+    toolbox.CompareArrays( rawPtr, reconstructedPtr, NX*NY*NZ, true );
+*/
+}
