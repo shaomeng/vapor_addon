@@ -1,10 +1,11 @@
 #include "vapor/SamSlice2.h"
+#include "vapor/SamSliceGroup2.h"
 #include "vapor/SamToolbox.h"
 
 #define NX 256
 #define NY 256
 #define NZ 256
-#define NSLICE 9
+#define NSLICES 9
 
 using namespace VAPoR;
 
@@ -16,35 +17,57 @@ int main( int argc, char* argv[] )
     }
 
     string path = "/home/02892/samuelli/tf/256cubes/";
-    string* filenames = new string[ NSLICE ];
-    for( long long i = 0; i < NSLICE; i++ )
+    string* filenames = new string[ NSLICES ];
+    for( long long i = 0; i < NSLICES; i++ )
         filenames[i] = path + "e" + to_string(i) + ".float";
 
     vector< int > cratios;
     for( int i = 1; i < argc; i++ )
         cratios.push_back( stoi( argv[i] ) );
-    int ratio = 4;
+    int ratio = 1;
     string wavename = "bior4.4";
 
-    SamSlice2* slices = new SamSlice2[ NSLICES ];
+    SamSlice2** slices = new SamSlice2*[ NSLICES ];
 
     for( int i = 0; i < NSLICES; i++ ) {
         slices[i] = new SamSlice2( filenames[i], wavename, NX, NY, NZ );
         slices[i] -> Decompose();
-        slices[i] -> Reconstruct( ratio );
+//        slices[i] -> Reconstruct( ratio );
+    }
+
+    cerr << "finish DWT on single slices" << endl;
+
+    SamSliceGroup2* group = new SamSliceGroup2( "bior4.4", NX*NY*NZ, NSLICES );
+    for( int i = 0; i < NSLICES; i++ )
+        slices[i] -> HandoverCoeffs( group -> ExposeRawPtr(i) );    
+    group -> Decompose();
+    group -> Reconstruct( ratio );
+
+    cerr << "finish DWT on slice group" << endl;
+
+    for( int i = 0; i < NSLICES; i++ ){
+        slices[i] -> UpdateCoeffs( group -> GetReconstructedPtr(i) );
+        slices[i] -> Reconstruct( ratio );   
+    }
+
+    SamToolbox toolbox;
+    float* rawPtr;
+    float* reconstructedPtr;
+    for( int i = 0; i < NSLICES; i++ ) {
+
+        cerr << "comparing slice " << i << endl;
+
+        rawPtr = slices[i] -> GetReconstructedPtr();
+        reconstructedPtr = slices[i] -> GetReconstructedPtr();
+        assert( rawPtr != NULL );
+        assert( reconstructedPtr != NULL );
+        toolbox.CompareArrays( rawPtr, reconstructedPtr, NX*NY*NZ, true );
     }
 
 
-    SamSlice2 s( filename, wavename, NX, NY, NZ );
-    s.Decompose();
-    s.Reconstruct( ratio );
-
-/*
-    SamToolbox toolbox;
-    float* rawPtr = s.GetRawPtr();
-    float* reconstructedPtr = s.GetReconstructedPtr();
-    assert( rawPtr != NULL );
-    assert( reconstructedPtr != NULL );
-    toolbox.CompareArrays( rawPtr, reconstructedPtr, NX*NY*NZ, true );
-*/
+    if( group )                 delete group;
+    for( int i = 0; i < NSLICES; i++ )
+        if( slices[i] )         delete slices[i];    
+    delete[]                    slices;
+    if( filenames )             delete filenames;
 }

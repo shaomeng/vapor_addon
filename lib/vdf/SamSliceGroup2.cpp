@@ -32,14 +32,14 @@ SamSliceGroup2::~SamSliceGroup2()
     if( _mw )                       delete _mw;
 }
 
-void
-SamSliceGroup2::TakeoverRawPtr( size_t i, float* p )
+float*
+SamSliceGroup2::ExposeRawPtr( size_t i )
 {
     if( _raw[i] ) {
-        cerr << "raw pointer of SliceGroup is not NULL!" << endl;
+        cerr << "WARNING! raw pointer of SliceGroup is not NULL!" << endl;
         delete[] _raw[i];
     }
-    _raw[i] = p;
+    return _raw[i];
 }
 
 void
@@ -70,7 +70,6 @@ SamSliceGroup2::Decompose( )
 void
 SamSliceGroup2::Reconstruct( int ratio )
 {
-    size_t nCoeffs = _nslices * _rawlen;
 
     float nth = 0.0;
     if( ratio > 1 )
@@ -104,6 +103,7 @@ SamSliceGroup2::Reconstruct( int ratio )
             _reconstructed[j][i] = dst[j];        
     }   
 
+//    size_t nCoeffs = _nslices * _rawlen;
 //    size_t n = nCoeffs / ratio;
 //    if( n != inCount )
 //        cerr << "WARNING: should use " << n << " coeffs, but actually used : "

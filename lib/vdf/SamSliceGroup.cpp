@@ -81,7 +81,7 @@ SamSliceGroup::Compress1( )
 int
 SamSliceGroup::Decompress1( int ratio )
 {
-    size_t nCoeffs = _nslices * _rawlen;
+//    size_t nCoeffs = _nslices * _rawlen;
 //    if( nCoeffs % ratio != 0 )
 //        cerr << "WARNING: requesting compression ratio is not divisible: " 
 //             << ratio << endl;
@@ -123,7 +123,7 @@ SamSliceGroup::Decompress1( int ratio )
 
     }   
 
-    size_t n = nCoeffs / ratio;
+//    size_t n = nCoeffs / ratio;
 //    if( n != inCount )
 //        cerr << "WARNING: should use " << n << " coeffs, but actually used : "
 //             << inCount << endl;
