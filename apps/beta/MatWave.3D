@@ -2,9 +2,9 @@
 #include "vapor/SamSliceGroup2.h"
 #include "vapor/SamToolbox.h"
 
-#define NX 256
-#define NY 256
-#define NZ 256
+#define NX 504
+#define NY 504
+#define NZ 504
 #define NSLICES 9
 
 using namespace VAPoR;
@@ -18,14 +18,14 @@ int main( int argc, char* argv[] )
 
     string* filenames = new string[ NSLICES ];
 //    string path = "/home/02892/samuelli/tf/256cubes/";
-    string path = "/Users/samuel/Backyard/256cubes/";
+    string path = "/Users/samuel/Backyard/plume_504cube/";
     for( long long i = 0; i < NSLICES; i++ )
-        filenames[i] = path + "e" + to_string(i) + ".float";
+        filenames[i] = path + to_string(i) + ".float";
 
     vector< int > cratios;
     for( int i = 1; i < argc; i++ )
         cratios.push_back( stoi( argv[i] ) );
-    int ratio = 2;
+    int ratio = 4;
     string wavename = "bior4.4";
 
     SamToolbox toolbox;
