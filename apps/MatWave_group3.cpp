@@ -1,6 +1,5 @@
 #include "vapor/SamSlice2.h"
 #include "vapor/SamSliceGroup3.h"
-#include "vapor/SamSliceGroup2.h"
 #include "vapor/SamToolbox.h"
 #include <sys/time.h>
 
@@ -8,6 +7,7 @@
 #define NY 504
 #define NZ 504
 #define NSLICES 9
+#define STARTIDX 0
 
 using namespace VAPoR;
 
@@ -18,26 +18,37 @@ int main( int argc, char* argv[] )
         exit(1);
     }
     int ratio = stoi( argv[1] );
+    string wavename = "bior4.4";
+    string* filenames = new string[ NSLICES ];
 
     struct timeval t_now;
     double timer1, timer2;
-
-    string* filenames = new string[ NSLICES ];
+/*
+ * 504^3 test
+ *
     string path = "/work/02892/samuelli/maverick/15plume3d/float/plume_504cube/";
     for( long long i = 0; i < NSLICES; i++ )
         filenames[i] = path + to_string(i) + ".float";
+*/
+    
+/*
+ * 504x504x2048 test
+ */
+    string path = "/work/02892/samuelli/maverick/15plume3d/float/ru/";
+    for( long long i = STARTIDX; i < STARTIDX + NSLICES; i++ )
+        filenames[i] = path + "ru." + to_string(i) + ".float";
+
 
 /*
     vector< int > cratios;
     for( int i = 1; i < argc; i++ )
         cratios.push_back( stoi( argv[i] ) );
 */
-    string wavename = "bior4.4";
 
     SamToolbox toolbox;
     SamSlice2** slices = new SamSlice2*[ NSLICES ];
-
     float rms[ NSLICES ];
+
     #pragma omp parallel for
     for( int i = 0; i < NSLICES; i++ ) {
         slices[i] = new SamSlice2( filenames[i], wavename, NX, NY, NZ );
@@ -48,12 +59,12 @@ int main( int argc, char* argv[] )
         rms[i] = toolbox.CompareArrays( rawPtr, reconstructedPtr, NX*NY*NZ, false );
         slices[i] -> FreeReconstructed();   // make space for group operation
     }
-    for( int i = 0; i < NSLICES; i++ )
-        cerr << "Slice# " << i << ", RMS=" << rms[i] << endl;
+    // for( int i = 0; i < NSLICES; i++ )
+    //     cerr << "Slice# " << i << ", RMS=" << rms[i] << endl;
     cerr << "\t==> 3D RMS: " << toolbox.CalcRMS( rms, NSLICES ) << endl;
 
 
-    SamSliceGroup3* group = new SamSliceGroup3( "bior4.4", NX*NY*NZ, NSLICES );
+    SamSliceGroup3* group = new SamSliceGroup3( wavename, NX*NY*NZ, NSLICES );
     vector< float* > rawarr;
     for( int i = 0; i < NSLICES; i++ )
         rawarr.push_back( slices[i] -> GetCoeffsPtr() );
@@ -64,41 +75,14 @@ int main( int argc, char* argv[] )
     group -> Decompose();
     gettimeofday(&t_now, NULL);
     timer2 = t_now.tv_sec + (t_now.tv_usec/1000000.0);
-    cerr << "\tfinish decomposing in " << (timer2 - timer1) << " seconds, now reconstructing the group..." << endl;
+    cerr << "\tfinish temporal decomposing in " << (timer2 - timer1) << endl;
 
     gettimeofday(&t_now, NULL);
     timer1 = t_now.tv_sec + (t_now.tv_usec/1000000.0);
     group -> Reconstruct( ratio );
     gettimeofday(&t_now, NULL);
     timer2 = t_now.tv_sec + (t_now.tv_usec/1000000.0);
-    cerr << "\tfinish reconstructing in " << (timer2 - timer1) << " seconds, now reconstructing slices..." << endl;
-
-
-
-
-/*
-    SamSliceGroup2* group2 = new SamSliceGroup2( "bior4.4", NX*NY*NZ, NSLICES );
-    for( int i = 0; i < NSLICES; i++ )
-        group2 -> UpdateRawPtr( i, slices[i] -> HandoverCoeffs() );
-    group2 -> Decompose();
-    group2 -> Reconstruct( ratio );
-
-    float* g2_buf = new float[ NX*NY*NZ ];
-    g2_buf = group2 -> GetReconstructedPtr( NSLICES-1 );
-
-    float* g3_buf = new float[ NX*NY*NZ ];
-    group -> FillReconstructedPtr( NSLICES-1, g3_buf );
-
-    for( size_t i = 0; i < NX*NY*NZ; i++ )
-        if( g2_buf[i] != g3_buf[i] )
-            cerr << i << "\t" << g2_buf[i] << "\t" << g3_buf[i] << endl;
-
-    delete[]    g2_buf;
-    delete[]    g3_buf;
-*/
-
-
-
+    cerr << "\tfinish temporal reconstruction in " << (timer2 - timer1) << endl;
 
 
 
@@ -116,8 +100,8 @@ int main( int argc, char* argv[] )
         assert( reconstructedPtr != NULL );
         rms[i] = toolbox.CompareArrays( rawPtr, reconstructedPtr, NX*NY*NZ, false );
     }
-    for( int i = 0; i < NSLICES; i++ )
-        cerr << "Slice# " << i << ", RMS=" << rms[i] << endl;
+    // for( int i = 0; i < NSLICES; i++ )
+    //     cerr << "Slice# " << i << ", RMS=" << rms[i] << endl;
     cerr << "\t==> 3D+1D RMS: " << toolbox.CalcRMS( rms, NSLICES ) << endl;
 
     
