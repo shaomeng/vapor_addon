@@ -63,6 +63,8 @@ public:
     float Findnth( const float* arr, size_t len, size_t n);
 
     float CalcRMS( const vector< float > &arr );
+    float CalcRMS( const float* arr, size_t len );
+
 };
 
 }

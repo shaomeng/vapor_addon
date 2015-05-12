@@ -10,11 +10,11 @@
 using namespace VAPoR;
 
 
-const int NX = 288;
-const int NY = 288;
-const int NZ = 288;
+const int NX = 504;
+const int NY = 504;
+const int NZ = 504;
 bool KeepAppCoeff = false;
-float cratio = 512.0;
+float cratio = 4.0;
 
 const size_t NumCoeff = (float) (NX*NY*NZ) / cratio;
 
@@ -76,9 +76,10 @@ void test3d(string wavename, const float *srcarr, float *dstarr) {
 	//
 	cout << "ti " << ti << endl;
 	cout << "threshold  " << threshold  << endl;
+    size_t should_squash = clen - clen / cratio;    // should squash this many
 	size_t squashed = 0;
 	for (size_t i=startCoeffIdx; i<clen; i++) {
-		if (fabs(C[i]) <= fabs(threshold )) {
+		if (fabs(C[i]) <= fabs(threshold) && squashed <= should_squash) {
 			squashed += 1;
 			C[i] = 0;
 		}
@@ -307,6 +308,7 @@ int main(int argc, char **argv) {
 	cout << endl;
 	cout << endl;
 	
+/*
 	cout << "Test 2dp1d \n";
 	test2dp1d(wname, srcarr, dstarr);
 
@@ -318,6 +320,7 @@ int main(int argc, char **argv) {
     cout << "L2 = " << l2 << endl;
     cout << "LMax = " << lmax << endl;
     cout << "RMS = " << rms << endl;
+*/
 
     delete[] srcarr;
     delete[] dstarr;

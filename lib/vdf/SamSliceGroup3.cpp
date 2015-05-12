@@ -1,4 +1,4 @@
-#include "vapor/SamSliceGroup2.h"
+#include "vapor/SamSliceGroup3.h"
 
 using namespace VAPoR;
 

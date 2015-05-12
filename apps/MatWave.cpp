@@ -1,6 +1,7 @@
 #include "vapor/SamSlice2.h"
 #include "vapor/SamSliceGroup2.h"
 #include "vapor/SamToolbox.h"
+#include <sys/time.h>
 
 #define NX 504
 #define NY 504
@@ -15,44 +16,63 @@ int main( int argc, char* argv[] )
         cerr << "Please specify the compression ratios to test!" << endl;
         exit(1);
     }
+    int ratio = stoi( argv[1] );
+
+    struct timeval t_now;
+    double timer1, timer2;
 
     string* filenames = new string[ NSLICES ];
-//    string path = "/home/02892/samuelli/tf/256cubes/";
-    string path = "/Users/samuel/Backyard/plume_504cube/";
+    string path = "/home/02892/samuelli/15plume3d/float/plume_504cube/";
     for( long long i = 0; i < NSLICES; i++ )
         filenames[i] = path + to_string(i) + ".float";
 
+/*
     vector< int > cratios;
     for( int i = 1; i < argc; i++ )
         cratios.push_back( stoi( argv[i] ) );
-    int ratio = 4;
+*/
     string wavename = "bior4.4";
 
     SamToolbox toolbox;
     SamSlice2** slices = new SamSlice2*[ NSLICES ];
 
+    float rms[ NSLICES ];
+    #pragma omp parallel for
     for( int i = 0; i < NSLICES; i++ ) {
         slices[i] = new SamSlice2( filenames[i], wavename, NX, NY, NZ );
         slices[i] -> Decompose();
         slices[i] -> Reconstruct( ratio );
         float* rawPtr = slices[i] -> GetRawPtr();
         float* reconstructedPtr = slices[i] -> GetReconstructedPtr();
-        toolbox.CompareArrays( rawPtr, reconstructedPtr, NX*NY*NZ, true );
-    }
+        rms[i] = toolbox.CompareArrays( rawPtr, reconstructedPtr, NX*NY*NZ, true );
 
-    cerr << "finish DWT on single slices" << endl;
+        slices[i] -> FreeReconstructed();   // make space for group operation
+    }
+    cerr << "\t==> 3D RMS: " << toolbox.CalcRMS( rms, NSLICES ) << endl;
+
+//    cerr << "finish DWT on single slices, now decomposing on the group" << endl;
 
 
     SamSliceGroup2* group = new SamSliceGroup2( "bior4.4", NX*NY*NZ, NSLICES );
     for( int i = 0; i < NSLICES; i++ )
         group -> UpdateRawPtr( i, slices[i] -> HandoverCoeffs() );
+
+    gettimeofday(&t_now, NULL);
+    timer1 = t_now.tv_sec + (t_now.tv_usec/1000000.0);
     group -> Decompose();
-cerr << "finish decomposing" << endl;
+    gettimeofday(&t_now, NULL);
+    timer2 = t_now.tv_sec + (t_now.tv_usec/1000000.0);
+    cerr << "\tfinish decomposing in " << (timer2 - timer1) << " seconds, now reconstructing the group..." << endl;
+
+    gettimeofday(&t_now, NULL);
+    timer1 = t_now.tv_sec + (t_now.tv_usec/1000000.0);
     group -> Reconstruct( ratio );
-cerr << "finish reconstructing" << endl;
+    gettimeofday(&t_now, NULL);
+    timer2 = t_now.tv_sec + (t_now.tv_usec/1000000.0);
+    cerr << "\tfinish reconstructing in " << (timer2 - timer1) << " seconds, now reconstructing slices..." << endl;
 
-    cerr << "finish DWT on slice group" << endl;
 
+    #pragma omp parallel for
     for( int i = 0; i < NSLICES; i++ ){
         slices[i] -> UpdateCoeffs( group -> GetReconstructedPtr(i) );
         slices[i] -> Reconstruct( 1 );   
@@ -63,8 +83,10 @@ cerr << "finish reconstructing" << endl;
         float* reconstructedPtr = slices[i] -> GetReconstructedPtr();
         assert( rawPtr != NULL );
         assert( reconstructedPtr != NULL );
-        toolbox.CompareArrays( rawPtr, reconstructedPtr, NX*NY*NZ, true );
+        rms[i] = toolbox.CompareArrays( rawPtr, reconstructedPtr, NX*NY*NZ, true );
     }
+    cerr << "\t==> 3D+1D RMS: " << toolbox.CalcRMS( rms, NSLICES ) << endl;
+    
 
 
     if( group )                 delete group;
