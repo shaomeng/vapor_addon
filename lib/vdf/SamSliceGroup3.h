@@ -25,8 +25,7 @@ public:
     SamSliceGroup3( string wavename, size_t rawlen, size_t nslices );
     ~SamSliceGroup3();
 
-    // The purpose was to let SamSlice2 hand it over.
-    void UpdateRawPtr( size_t i, float* ptr  );
+    void UpdateRawPtr( vector< float* > &rawarr  );
 
     void Decompose();
 
@@ -34,7 +33,7 @@ public:
     void Reconstruct( int ratio );
 
     // Get the ith coeff array. This is for the ith file.
-    float* GetReconstructedPtr( int i );
+    void FillReconstructedPtr( int idx, float* ptr );
 
 /*
     void FreeReconstructed( int i );
@@ -54,11 +53,9 @@ protected:
 
     MatWaveWavedec* _mw;
 
-    vector< float* > _raw;              // raw data to process by this class
-    vector< float* > _C1d;              // coefficients from DWT on raw arrays
-    size_t* _L1d;             // bookkeeping array, shared among all 1D arrays
+    size_t* _L1d;           // bookkeeping array, shared among all 1D arrays
+    float* _buf;            // huge array that has everything happening in place
 
-    vector< float* > _reconstructed;   
 
     float FindCoeffThreshold( int ratio );
 };

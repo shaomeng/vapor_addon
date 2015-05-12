@@ -1,4 +1,5 @@
 #include "vapor/SamSlice2.h"
+#include "vapor/SamSliceGroup3.h"
 #include "vapor/SamSliceGroup2.h"
 #include "vapor/SamToolbox.h"
 #include <sys/time.h>
@@ -45,18 +46,18 @@ int main( int argc, char* argv[] )
         float* rawPtr = slices[i] -> GetRawPtr();
         float* reconstructedPtr = slices[i] -> GetReconstructedPtr();
         rms[i] = toolbox.CompareArrays( rawPtr, reconstructedPtr, NX*NY*NZ, false );
-
         slices[i] -> FreeReconstructed();   // make space for group operation
     }
-    for( int i = 0; i < NSLICES; i++ ) 
+    for( int i = 0; i < NSLICES; i++ )
         cerr << "Slice# " << i << ", RMS=" << rms[i] << endl;
     cerr << "\t==> 3D RMS: " << toolbox.CalcRMS( rms, NSLICES ) << endl;
 
 
-
-    SamSliceGroup2* group = new SamSliceGroup2( "bior4.4", NX*NY*NZ, NSLICES );
+    SamSliceGroup3* group = new SamSliceGroup3( "bior4.4", NX*NY*NZ, NSLICES );
+    vector< float* > rawarr;
     for( int i = 0; i < NSLICES; i++ )
-        group -> UpdateRawPtr( i, slices[i] -> HandoverCoeffs() );
+        rawarr.push_back( slices[i] -> GetCoeffsPtr() );
+    group -> UpdateRawPtr( rawarr );
 
     gettimeofday(&t_now, NULL);
     timer1 = t_now.tv_sec + (t_now.tv_usec/1000000.0);
@@ -73,9 +74,38 @@ int main( int argc, char* argv[] )
     cerr << "\tfinish reconstructing in " << (timer2 - timer1) << " seconds, now reconstructing slices..." << endl;
 
 
+
+
+/*
+    SamSliceGroup2* group2 = new SamSliceGroup2( "bior4.4", NX*NY*NZ, NSLICES );
+    for( int i = 0; i < NSLICES; i++ )
+        group2 -> UpdateRawPtr( i, slices[i] -> HandoverCoeffs() );
+    group2 -> Decompose();
+    group2 -> Reconstruct( ratio );
+
+    float* g2_buf = new float[ NX*NY*NZ ];
+    g2_buf = group2 -> GetReconstructedPtr( NSLICES-1 );
+
+    float* g3_buf = new float[ NX*NY*NZ ];
+    group -> FillReconstructedPtr( NSLICES-1, g3_buf );
+
+    for( size_t i = 0; i < NX*NY*NZ; i++ )
+        if( g2_buf[i] != g3_buf[i] )
+            cerr << i << "\t" << g2_buf[i] << "\t" << g3_buf[i] << endl;
+
+    delete[]    g2_buf;
+    delete[]    g3_buf;
+*/
+
+
+
+
+
+
+
     #pragma omp parallel for
     for( int i = 0; i < NSLICES; i++ ){
-        slices[i] -> UpdateCoeffs( group -> GetReconstructedPtr(i) );
+        group -> FillReconstructedPtr( i, slices[i] -> GetCoeffsPtr() );
         slices[i] -> Reconstruct( 1 );   
     }
 
@@ -85,11 +115,13 @@ int main( int argc, char* argv[] )
         assert( rawPtr != NULL );
         assert( reconstructedPtr != NULL );
         rms[i] = toolbox.CompareArrays( rawPtr, reconstructedPtr, NX*NY*NZ, false );
-    }  
-    for( int i = 0; i < NSLICES; i++ ) 
+    }
+    for( int i = 0; i < NSLICES; i++ )
         cerr << "Slice# " << i << ", RMS=" << rms[i] << endl;
     cerr << "\t==> 3D+1D RMS: " << toolbox.CalcRMS( rms, NSLICES ) << endl;
+
     
+
 
 
     if( group )                 delete group;

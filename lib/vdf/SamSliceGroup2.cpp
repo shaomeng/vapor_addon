@@ -57,7 +57,7 @@ SamSliceGroup2::Decompose( )
 
 /* 
  * Serial version, works great
- *
+ */
     int rc;
     float src[ _nslices ];
     #pragma unroll
@@ -69,11 +69,10 @@ SamSliceGroup2::Decompose( )
         assert (rc >= 0);
         _C1d[i] = dst;
     }
-*/
 
 /*
  * OpenMP version
- */
+ *
     #pragma omp parallel 
     {
         MatWaveWavedec mw( _wavename );
@@ -90,6 +89,7 @@ SamSliceGroup2::Decompose( )
             _C1d[i] = dst;
     }
     }
+*/
 }
 
 void
@@ -97,7 +97,6 @@ SamSliceGroup2::Reconstruct( int ratio )
 {
 
     float nth = 0.0;
-    size_t nc = _nslices * _rawlen / ratio; // should use nc coeffs
     if( ratio > 1 )
         nth = FindCoeffThreshold( ratio ); // use coeffs larger than nth.
     float nnth = -1.0 * nth;
@@ -120,7 +119,7 @@ SamSliceGroup2::Reconstruct( int ratio )
     {    
         for( int j = 0; j < _clen1d; j++ ) {
             float c = _C1d[i][j];
-            if( (c >= nth || c <= nnth) && inCount <= nc) {
+            if( (c >= nth || c <= nnth) ) {
                 src[j] = c;
                 inCount++;
             }

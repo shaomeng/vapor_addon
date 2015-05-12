@@ -12,7 +12,8 @@
 # in $(INSTALL_PREFIX_DIR)/bin, libraries in $(INSTALL_PREFIX_DIR)/lib
 # etc,.
 #
-INSTALL_PREFIX_DIR=/home/02892/samuelli/Tools/vapor-2.4.0-install
+#INSTALL_PREFIX_DIR=/home/02892/samuelli/Tools/vapor-2.4.0-install
+INSTALL_PREFIX_DIR=/home/03546/tg828451/Tools/vapor-2.4.0-install
 
 # Set RELEASE to 1 to compile with optimizations and without debug info.
 RELEASE=1
@@ -37,7 +38,7 @@ PROFILING=0
 # linker normally checks. The linker will search the directories
 # in the order specified.
 #
-LIB_SEARCH_DIRS = /home/02892/samuelli/icc_builds/lib \
+LIB_SEARCH_DIRS = /home/03546/tg828451/icc_install/lib \
                   /opt/apps/intel14/hdf5/1.8.12/x86_64/lib \
                   /opt/apps/intel14/mvapich2_2_0/python/2.7.6/lib \
 				  /opt/apps/intel14/netcdf/4.2.1.1/lib
@@ -47,7 +48,7 @@ LIB_SEARCH_DIRS = /home/02892/samuelli/icc_builds/lib \
 # dependencies (e.g. netCDF, IDL) are not installed in a location where 
 # compiler normally checks. The compiler will search the directories 
 # in the order specified.  
-INC_SEARCH_DIRS = /home/02892/samuelli/icc_builds/include \
+INC_SEARCH_DIRS = /home/03546/tg828451/icc_install/include \
                   /opt/apps/intel14/hdf5/1.8.12/x86_64/include \
                  /opt/apps/intel14/mvapich2_2_0/python/2.7.6/include/python2.7 \
 				/opt/apps/intel14/netcdf/4.2.1.1/include
@@ -63,19 +64,19 @@ NETCDF_LIBS =  netcdf hdf5 hdf5_hl
 # Set FREETYPE2_INC_DIR to the path to the Freetype2 directory if not
 # in a standard location. This is the directory that contains the file
 # ft2build.h
-FREETYPE2_INC_DIR = /home/02892/samuelli/icc_builds/include/freetype2
+FREETYPE2_INC_DIR = /home/03546/tg828451/icc_install/include/freetype2
 
 # Set GRIB_API_DIR to the root of the path to the GRIB_API directory,
 # where the sub directories 'bin', 'lib', 'include', and 'share' may be 
 # found. 
 #
-GRIB_API_DIR = /home/02892/samuelli/icc_builds
+GRIB_API_DIR = /home/03546/tg828451/icc_install
 
 # Set PROJ4_DIR to the root of the path to the PROJ4 directory,
 # where the sub directories 'bin', 'lib', 'include', and 'share' may be 
 # found. 
 #
-PROJ4_DIR = /home/02892/samuelli/icc_builds
+PROJ4_DIR = /home/03546/tg828451/icc_install
 
 # Set to 1 if you want the VAPoR GUI to be built. Otherwise only the 
 # VAPoR libraries and support utilities are compiled
