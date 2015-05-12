@@ -5,7 +5,7 @@
 
 #define NX 504
 #define NY 504
-#define NZ 504
+#define NZ 2048
 #define NSLICES 9
 #define STARTIDX 0
 
