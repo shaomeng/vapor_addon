@@ -90,6 +90,9 @@ int main( int argc, char* argv[] )
     for( int i = 0; i < NSLICES; i++ )
         rawarr.push_back( slices[i] -> GetCoeffsPtr() );
     group -> UpdateRawPtr( rawarr );
+    for( int i = 0; i < NSLICES; i++ )
+        slices[i] -> FreeCoeffs();
+
 
     //gettimeofday(&t_now, NULL);
     //timer1 = t_now.tv_sec + (t_now.tv_usec/1000000.0);
@@ -112,7 +115,7 @@ int main( int argc, char* argv[] )
             group -> FillReconstructedPtr( j, slices[j] -> GetCoeffsPtr() );
             slices[j] -> Reconstruct( 1 );
             float* rawPtr = slices[i] -> GetRawPtr();
-            float* reconstructedPtr = slices[i] -> GetReconstructedPtr();
+            float* reconstructedPtr = slices[j] -> GetReconstructedPtr();
             errs[i][j] = toolbox.CompareArrays( rawPtr, reconstructedPtr, NX*NY*NZ, false );
         }
     }

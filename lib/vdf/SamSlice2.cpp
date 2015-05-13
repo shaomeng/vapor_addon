@@ -147,11 +147,8 @@ SamSlice2::GetRawPtr()
 float*
 SamSlice2::GetCoeffsPtr()
 {
-    if( _C != NULL )      return _C;
-    else{
-        cerr << "Coeffs pointer is NULL when asked" << endl;
-        return NULL;
-    }
+    if( _C == NULL )    _C = new float[ _clen ];
+    return _C;
 }
 float*
 SamSlice2::GetReconstructedPtr()
