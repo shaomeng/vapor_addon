@@ -12,6 +12,11 @@
 
 namespace VAPoR{
 
+struct SamErr{
+    float rms = 0.0;
+    float max = 0.0;
+};
+
 class SamToolbox { 
 public:
     // Constructor.
@@ -37,7 +42,7 @@ public:
     // Compare two arrays with stats on errors.
     // 'print' controls if it prints the results out
     // It always returns the RMS value.
-    float CompareArrays( const float* arr1, const float* arr2, size_t len, bool print );
+    SamErr CompareArrays( const float* arr1, const float* arr2, size_t len, bool print );
 
     // Read a file of size: len
     // It requires the file name, length, and an allocated space to put read file
@@ -59,11 +64,13 @@ public:
                         vector< size_t > &histogram ); // Output
 
     float FindMax( const float* arr, size_t len );
+    float FindMax( const SamErr* arr, size_t len );
 
     float Findnth( const float* arr, size_t len, size_t n);
 
     float CalcRMS( const vector< float > &arr );
     float CalcRMS( const float* arr, size_t len );
+    float CalcRMS( const SamErr* arr, size_t len );
 
 };
 

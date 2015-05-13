@@ -54,7 +54,8 @@ protected:
     MatWaveWavedec* _mw;
 
     size_t* _L1d;           // bookkeeping array, shared among all 1D arrays
-    float* _buf;            // huge array that has everything happening in place
+    float* _buf;            // huge array that stores all the intermediate numbers 
+    float* _C1d;            // huge array that stores decompose results 
 
 
     float FindCoeffThreshold( int ratio );

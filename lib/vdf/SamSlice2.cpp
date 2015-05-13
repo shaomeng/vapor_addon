@@ -82,17 +82,14 @@ SamSlice2::Reconstruct( int ratio )
     int rc = 0;
 
     if( ratio > 1 ) {   // cull coefficients
-        size_t nc = _clen / ratio;              // should use nc coeffs
         float nth = FindCoeffThreshold(ratio);  // nth largest, indexing from 1.
         float nnth = -1.0 * nth;
         
         float* culledCoeffs = new float[ _clen ];
-        size_t inCount = 0;
 
         for( size_t i = 0; i < _clen; i++ )
-            if( (_C[i] >= nth || _C[i] <= nnth) && inCount <= nc ) {
+            if( (_C[i] >= nth || _C[i] <= nnth) ) {
                 culledCoeffs[i] = _C[i];
-                inCount++;
             }
             else  culledCoeffs[i] = 0.0;
 
