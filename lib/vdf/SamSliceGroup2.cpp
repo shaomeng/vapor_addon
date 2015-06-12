@@ -55,8 +55,12 @@ SamSliceGroup2::Decompose( )
     if( _L1d == NULL )     _L1d = new size_t[ _nlevels1d + 2 ];
     _mw -> computeL( _nslices, _nlevels1d, _L1d );
 
+/* 
+ * Serial version, works great
+ */
     int rc;
     float src[ _nslices ];
+    #pragma unroll
     for( size_t i = 0; i < _rawlen; i++ )
     {
         for( size_t j = 0; j < _nslices; j++ )      src[j] = _raw[j][i];
@@ -65,6 +69,27 @@ SamSliceGroup2::Decompose( )
         assert (rc >= 0);
         _C1d[i] = dst;
     }
+
+/*
+ * OpenMP version
+ *
+    #pragma omp parallel 
+    {
+        MatWaveWavedec mw( _wavename );
+        int rc;
+        #pragma omp for 
+        for( size_t i = 0; i < _rawlen; i++ )
+        {
+            float src[ _nslices ]; 
+            for( int j = 0; j < _nslices; j++ )         src[j] = _raw[j][i];
+            size_t l1d[ _nlevels1d + 2 ];
+            float* dst = new float[ _clen1d ];
+            rc = mw.wavedec( src, _nslices, _nlevels1d, dst, l1d );
+            assert (rc >= 0);
+            _C1d[i] = dst;
+    }
+    }
+*/
 }
 
 void
@@ -82,15 +107,19 @@ SamSliceGroup2::Reconstruct( int ratio )
             _reconstructed[i] = new float[ _rawlen ];
     
 
-    float src[ _clen1d ], dst[ _nslices ];
-    int rc;
     size_t inCount = 0;
     
-    for( size_t i = 0; i < _rawlen; i++ ) {
-        
+/*
+ * Serial Version, works great!
+ */
+    float src[ _clen1d ], dst[ _nslices ];  // they should have the same length
+    int rc;
+    #pragma unroll
+    for( size_t i = 0; i < _rawlen; i++ )
+    {    
         for( int j = 0; j < _clen1d; j++ ) {
             float c = _C1d[i][j];
-            if( c >= nth || c <= nnth ) {
+            if( (c >= nth || c <= nnth) ) {
                 src[j] = c;
                 inCount++;
             }
@@ -103,12 +132,38 @@ SamSliceGroup2::Reconstruct( int ratio )
             _reconstructed[j][i] = dst[j];        
     }   
 
-//    size_t nCoeffs = _nslices * _rawlen;
-//    size_t n = nCoeffs / ratio;
-//    if( n != inCount )
-//        cerr << "WARNING: should use " << n << " coeffs, but actually used : "
-//             << inCount << endl;
-    
+/*
+ * OpenMP Version
+ * The final result is different from the serial one.
+ * Not sure where the problem is
+ *
+    #pragma omp parallel
+    {
+        int rc;
+        float src[ _clen1d ], dst[ _nslices ];  // they should have the same length
+        MatWaveWavedec mv( _wavename );
+        #pragma omp for
+        for( size_t i = 0; i < _rawlen; i++ )
+        {
+            for( int j = 0; j < _clen1d; j++ )
+            {
+                float c = _C1d[i][j];
+                if( (c >= nth || c <= nnth) && inCount <= nc) {
+                    src[j] = c;
+                    #pragma omp atomic
+                    inCount++;
+                }
+                else          src[j] = 0.0;
+            }
+
+            rc = mv.waverec( src, _L1d, _nlevels1d, dst );
+            assert( rc >= 0 );
+            for( int j = 0; j < _nslices; j++ )
+                _reconstructed[j][i] = dst[j];        
+        }
+    }
+*/
+
 }
 
 float*

@@ -102,7 +102,7 @@ cerr << "mincoeff=" << mincoeff << ",  n=" << n << endl;
     return(0);
 }
 
-float
+SamErr
 SamToolbox::CompareArrays(
     const float* arr1,
     const float* arr2,
@@ -122,11 +122,93 @@ SamToolbox::CompareArrays(
         sum = t;
         if (tmp > max)      max = tmp;
     }
-    sum /= len * 1.0;
+    sum /= double(len);
     sum = sqrt( sum );
     if( print )
         cerr << "\tRMS: " << sum << ", max error: " << max << endl;
 
+    SamErr err;
+    err.rms = double(sum);
+    err.max = double(max);
+    return err;
+}
+
+SamErr
+SamToolbox::CompareArrays(
+    const double* arr1,
+    const double* arr2,
+    size_t len,
+    bool   print )
+{
+    double sum = 0.0;
+    double c = 0.0;
+    double max = 0.0;
+    double tmp;
+    for( size_t i = 0; i < len; i++) {
+        tmp = (double)arr1[i] - (double)arr2[i];
+        if (tmp < 0)    tmp *= -1.0;
+        double y = tmp * tmp - c;
+        double t = sum + y;
+        c = (t - sum) - y;
+        sum = t;
+        if (tmp > max)      max = tmp;
+    }
+    sum /= double(len);
+    sum = sqrt( sum );
+    if( print )
+        cerr << "\tRMS: " << sum << ", max error: " << max << endl;
+
+    SamErr err;
+    err.rms = double(sum);
+    err.max = double(max);
+    return err;
+}
+
+float
+SamToolbox::CalcRMS( const vector< float > &arr )
+{
+    double sum = 0.0;
+    double c = 0.0;
+    for( size_t i = 0; i < arr.size(); i++ ) {
+        double y = arr[i] * arr[i] - c;
+        double t = sum + y;
+        c = (t - sum) - y;
+        sum = t;
+    }
+    sum /= double(arr.size());
+    sum = sqrt( sum );    
+    return float(sum);
+}
+
+float
+SamToolbox::CalcRMS( const float* arr, size_t len)
+{
+    double sum = 0.0;
+    double c = 0.0;
+    for( size_t i = 0; i < len; i++ ) {
+        double y = arr[i] * arr[i] - c;
+        double t = sum + y;
+        c = (t - sum) - y;
+        sum = t;
+    }
+    sum /= double(len);
+    sum = sqrt( sum );    
+    return float(sum);
+}
+
+double
+SamToolbox::CalcRMS( const SamErr* arr, size_t len)
+{
+    double sum = 0.0;
+    double c = 0.0;
+    for( size_t i = 0; i < len; i++ ) {
+        double y = arr[i].rms * arr[i].rms - c;
+        double t = sum + y;
+        c = (t - sum) - y;
+        sum = t;
+    }
+    sum /= double(len);
+    sum = sqrt( sum );    
     return sum;
 }
 
@@ -193,6 +275,15 @@ SamToolbox::FindMax( const float* arr, size_t len ) {
     return max;
 }
 
+double 
+SamToolbox::FindMax( const SamErr* arr, size_t len ) {
+    double max = 0;
+    for( size_t i = 0; i < len; i++ )
+        if( arr[i].max > max )
+            max = arr[i].max;
+    return max;
+}
+
 float
 SamToolbox::Findnth( const float* arr, size_t arrlen, size_t n)
 {
@@ -213,20 +304,4 @@ SamToolbox::Findnth( const float* arr, size_t arrlen, size_t n)
     delete vec;
     
     return nth;
-}
-
-float
-SamToolbox::CalcRMS( const vector< float > &arr )
-{
-    float sum = 0.0;
-    float c = 0.0;
-    for( size_t i = 0; i < arr.size(); i++ ) {
-        float y = arr[i] * arr[i] - c;
-        float t = sum + y;
-        c = (t - sum) - y;
-        sum = t;
-    }
-    sum /= 1.0 * arr.size();
-    sum = sqrt( sum );    
-    return sum;
 }
