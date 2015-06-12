@@ -372,6 +372,36 @@ __global__ void kernel_conv( double* sigIn, size_t sigInLen,
         }
     }
 }
+// Stencil kernel for forward xform, version 2 with shared memory
+__global__ void kernel_conv2( double* sigIn, size_t sigInLen,
+                        double* low_filter, double* high_filter,
+                        int filterLen, double* cA, double* cD,
+                        size_t xlstart, size_t xhstart )
+{
+    __shared__ double s_low_filter[ 9 ];
+    __shared__ double s_high_filter[ 9 ];
+    if( threadIdx.x < filterLen ) {
+        s_low_filter[ threadIdx.x ] = low_filter[ threadIdx.x ];
+        s_high_filter[ threadIdx.x ] = high_filter[ threadIdx.x ];
+    }
+    __syncthreads();
+    // gindex is the absolute index in the input array
+    size_t gindex = threadIdx.x + blockIdx.x * blockDim.x;  // 0, 1, 2, 3 ...
+    size_t yi = gindex * 2;                                 // 0, 2, 4, 6 ...
+    
+    if( yi < sigInLen ) {
+        size_t yi2 = gindex;                                // 0, 1, 2, 3 ...
+        cA[ yi2 ] = cD[ yi2 ] = 0.0;
+        size_t xl = xlstart + yi;
+        size_t xh = xhstart + yi;
+        for( int k = filterLen - 1; k >= 0; k-- ) {
+			cA[yi2] += s_low_filter[k] * sigIn[xl];
+			cD[yi2] += s_high_filter[k] * sigIn[xh];
+			xl++;
+			xh++;
+        }
+    }
+}
 
 void cuda_forward_xform (
 	const double *sigIn, size_t sigInLen, size_t sigInExtendedLen,
@@ -381,12 +411,6 @@ void cuda_forward_xform (
 {
 	size_t xlstart = oddlow ? 1 : 0;
 	size_t xhstart = oddhigh ? 1 : 0;
-
-    size_t nThread = 128;
-    size_t nBlock = (sigInLen/2) / nThread;
-
-    dim3 threadsPerBlock( nThread, 1, 1 );
-    dim3 numBlocks( nBlock, 1, 1 );
 
     double *d_sigIn, *d_low_filter, *d_high_filter, *d_cA, *d_cD;
     if( cudaSuccess != cudaMalloc( (void**) &d_sigIn, sigInExtendedLen * sizeof(double) )) {
@@ -413,15 +437,18 @@ void cuda_forward_xform (
     cudaMemcpy( d_low_filter, low_filter, filterLen * sizeof(double), cudaMemcpyHostToDevice );
     cudaMemcpy( d_high_filter, high_filter, filterLen * sizeof(double), cudaMemcpyHostToDevice );
 
-     kernel_conv<<<numBlocks, threadsPerBlock>>>( d_sigIn, sigInLen, 
-//     kernel_conv<<<(nBlock, 1, 1), (nThread, 1, 1)>>>( d_sigIn, sigInLen, 
+    int nThread = 192;
+    int nBlock = (sigInLen/2) / nThread + 1;
+    
+//    kernel_conv<<< (nBlock, 1, 1), (nThread, 1, 1) >>>( d_sigIn, sigInLen, 
+    kernel_conv2<<< (nBlock, 1, 1), (nThread, 1, 1) >>>( d_sigIn, sigInLen, 
                                       d_low_filter, d_high_filter, filterLen, 
                                       d_cA, d_cD, xlstart, xhstart );
     cudaError err = cudaGetLastError();
     if ( cudaSuccess != err ) {
         cerr << "kernel invoke error: " << cudaGetErrorString( err ) << endl;
         cerr << "\tnBlock, nThread = " << nBlock << ",  " << nThread << endl;
-//        exit(1);
+        exit(1);
     }
 
     cudaMemcpy( cA, d_cA, cALen * sizeof(double), cudaMemcpyDeviceToHost );
@@ -474,9 +501,6 @@ cerr << "sigInLen, sigInExtendedLen, filterLen, cALen, cDLen: "
 	xlstart = oddlow ? 1 : 0;
 	xhstart = oddhigh ? 1 : 0;
 
-    size_t nBlock = sigInLen / 2 + 1;
-    size_t nThread = 1;
-
     double *d_sigIn, *d_low_filter, *d_high_filter, *d_cA, *d_cD;
     if( cudaSuccess != cudaMalloc( (void**) &d_sigIn, sigInExtendedLen * sizeof(double) )) {
         cerr <<  "cudaMalloc fail: d_sigIn" << endl;
@@ -502,9 +526,20 @@ cerr << "sigInLen, sigInExtendedLen, filterLen, cALen, cDLen: "
     cudaMemcpy( d_low_filter, low_filter, filterLen * sizeof(double), cudaMemcpyHostToDevice );
     cudaMemcpy( d_high_filter, high_filter, filterLen * sizeof(double), cudaMemcpyHostToDevice );
 
-    kernel_conv<<<nBlock, nThread>>>( d_sigIn, sigInLen, 
+    int nThread = 128;
+    int nBlock = (sigInLen/2) / nThread + 1;
+    
+    dim3 thrdDim( nThread, 1, 1 );
+    dim3 blkDim ( nBlock,  1, 1 );
+
+    kernel_conv<<< blkDim, thrdDim >>>( d_sigIn, sigInLen, 
                                       d_low_filter, d_high_filter, filterLen, 
                                       d_cA, d_cD, xlstart, xhstart );
+    cudaError err = cudaGetLastError();
+    if ( cudaSuccess != err ) {
+        cerr << "kernel invoke error: " << cudaGetErrorString( err ) << endl;
+        cerr << "\tnBlock, nThread = " << nBlock << ",  " << nThread << endl;
+    }
 
     size_t cmin = min( cALen, cDLen );
     double *tmp_cA = new double[ cALen ];
@@ -874,16 +909,16 @@ int dwt_template(
     struct timeval sam_start, sam_end;
     gettimeofday( &sam_start, NULL );
 
-/*
 	forward_xform(
 		sigExtended, L[0]+L[1], wf->GetLowDecomFilCoef(), 
 		wf->GetHighDecomFilCoef(), filterLen, sigConvolved, sigConvolved+L[0],
 		oddlow, oddhigh);
-*/
+/*
 	cuda_forward_xform(
 		sigExtended, L[0]+L[1], sigExtendedLen, wf->GetLowDecomFilCoef(), 
 		wf->GetHighDecomFilCoef(), filterLen, sigConvolved, sigConvolved+L[0],
 		L[0], L[1], oddlow, oddhigh);
+*/
 
     gettimeofday( &sam_end, NULL );
     dwt->AddFXformTime( sam_start, sam_end );
