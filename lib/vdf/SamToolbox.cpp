@@ -128,8 +128,39 @@ SamToolbox::CompareArrays(
         cerr << "\tRMS: " << sum << ", max error: " << max << endl;
 
     SamErr err;
-    err.rms = sum;
-    err.max = max;
+    err.rms = double(sum);
+    err.max = double(max);
+    return err;
+}
+
+SamErr
+SamToolbox::CompareArrays(
+    const double* arr1,
+    const double* arr2,
+    size_t len,
+    bool   print )
+{
+    double sum = 0.0;
+    double c = 0.0;
+    double max = 0.0;
+    double tmp;
+    for( size_t i = 0; i < len; i++) {
+        tmp = (double)arr1[i] - (double)arr2[i];
+        if (tmp < 0)    tmp *= -1.0;
+        double y = tmp * tmp - c;
+        double t = sum + y;
+        c = (t - sum) - y;
+        sum = t;
+        if (tmp > max)      max = tmp;
+    }
+    sum /= double(len);
+    sum = sqrt( sum );
+    if( print )
+        cerr << "\tRMS: " << sum << ", max error: " << max << endl;
+
+    SamErr err;
+    err.rms = double(sum);
+    err.max = double(max);
     return err;
 }
 
@@ -165,7 +196,7 @@ SamToolbox::CalcRMS( const float* arr, size_t len)
     return float(sum);
 }
 
-float
+double
 SamToolbox::CalcRMS( const SamErr* arr, size_t len)
 {
     double sum = 0.0;
@@ -178,7 +209,7 @@ SamToolbox::CalcRMS( const SamErr* arr, size_t len)
     }
     sum /= double(len);
     sum = sqrt( sum );    
-    return float(sum);
+    return sum;
 }
 
 int
@@ -244,9 +275,9 @@ SamToolbox::FindMax( const float* arr, size_t len ) {
     return max;
 }
 
-float 
+double 
 SamToolbox::FindMax( const SamErr* arr, size_t len ) {
-    float max = 0;
+    double max = 0;
     for( size_t i = 0; i < len; i++ )
         if( arr[i].max > max )
             max = arr[i].max;

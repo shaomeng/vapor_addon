@@ -6,42 +6,44 @@
 #define NX 504
 #define NY 504
 #define NZ 2048
-#define NSLICES 9
-#define STARTIDX 0
+#define NSLICES 10
 
 using namespace VAPoR;
 
 int main( int argc, char* argv[] )
 {
     vector< int > cratios;
-    if( argc < 2 ) {
-        cerr << "Please specify the compression ratios to test!" << endl;
+    if( argc < 4 ) {
+        cerr << "usage: ./a.out UVW 0 ratio1 ratio2 ... " << endl;
         exit(1);
     }
     else
-        for( int i = 1; i < argc; i++ )
+        for( int i = 3; i < argc; i++ )
             cratios.push_back( stoi( argv[i] ) );
 
-    string wavename = "bior4.4";
+    string varname  = argv[1];
+    int startIdx    = stoi( argv[2] );
+    string wavenameXYZ = "bior4.4";
+    string wavenameT = "bior1.1";
     string* filenames = new string[ NSLICES ];
     struct timeval t_now;
     double timer1, timer2;
 
-
-/*
- * 504^3 test
- *
-    string path = "/work/02892/samuelli/maverick/15plume3d/float/plume_504cube/";
-    for( long long i = 0; i < NSLICES; i++ )
-        filenames[i] = path + to_string(i) + ".float";
-*/
     
-/*
- * 504x504x2048 test
- */
-    string path = "/work/02892/samuelli/maverick/15plume3d/float/ru/";
-    for( long long i = STARTIDX; i < STARTIDX + NSLICES; i++ )
-        filenames[i] = path + "ru." + to_string(i) + ".float";
+    string path = "/work/02892/samuelli/maverick/15plume3d/float/" + 
+                  varname + "/";
+    for( long long i = 0; i < NSLICES; i++ )
+        filenames[i] = path + varname + "." + to_string(startIdx + i) + 
+                        ".float";
+
+    // Use replicated data files
+    // string path = "/work/02892/samuelli/maverick/15plume3d/float/" + 
+    //                 varname + "_replica/";
+
+    // Use the 504*504*1024 files
+    //string path = "/work/03546/tg828451/maverick/15plume3d_1024z/";
+    //for( long long i = 0; i < NSLICES; i++ )
+    //    filenames[i] = path + "U1024z." + to_string(startIdx + i) + ".float";
 
 
 
@@ -51,13 +53,16 @@ int main( int argc, char* argv[] )
 
     #pragma omp parallel for
     for( int i = 0; i < NSLICES; i++ ) {
-        slices[i] = new SamSlice2( filenames[i], wavename, NX, NY, NZ );
+        slices[i] = new SamSlice2( filenames[i], wavenameXYZ, NX, NY, NZ );
         slices[i] -> Decompose();
     }
+
+    cerr << "==> Variable " << varname << ", from time stamp " << startIdx+400 << endl;
 
     /* 
      * Test on different cratios, 3D compression
      */
+/*
     #pragma omp parallel for
     for( int i = 0; i < NSLICES; i++ ) 
     {
@@ -72,20 +77,20 @@ int main( int argc, char* argv[] )
         slices[i] -> FreeReconstructed();   // make space for group operation
     }
 
-    cerr << "==> Slices from time stamp " << STARTIDX << endl;
-    cerr << "==> 3D compression on slices from " << endl;
+    cerr << "==> 3D compression " << endl;
     cerr << "\tRatio,\t\tRMS,\t\t\tMAX" << endl;
     for( int i = 0; i < cratios.size(); i++ ){
         float max = toolbox.FindMax( errs[i], NSLICES );
         float rms = toolbox.CalcRMS( errs[i], NSLICES );
         cerr << "\t" << cratios[i] << ",\t\t" << rms << ",\t\t" << max << endl;
     }
+*/
 
 
     /*
      * Setup Temporal Compression
      */ 
-    SamSliceGroup3* group = new SamSliceGroup3( wavename, NX*NY*NZ, NSLICES );
+    SamSliceGroup3* group = new SamSliceGroup3( wavenameT, NX*NY*NZ, NSLICES );
     vector< float* > rawarr;
     for( int i = 0; i < NSLICES; i++ )
         rawarr.push_back( slices[i] -> GetCoeffsPtr() );
@@ -114,13 +119,13 @@ int main( int argc, char* argv[] )
         {
             group -> FillReconstructedPtr( j, slices[j] -> GetCoeffsPtr() );
             slices[j] -> Reconstruct( 1 );
-            float* rawPtr = slices[i] -> GetRawPtr();
+            float* rawPtr           = slices[j] -> GetRawPtr();
             float* reconstructedPtr = slices[j] -> GetReconstructedPtr();
             errs[i][j] = toolbox.CompareArrays( rawPtr, reconstructedPtr, NX*NY*NZ, false );
         }
     }
 
-    cerr << "==> 3D + 1D compression on slices from " << endl;
+    cerr << "==> 3D + 1D results:" << endl;
     cerr << "\tRatio,\t\tRMS,\t\t\tMAX" << endl;
     for( int i = 0; i < cratios.size(); i++ ){
         float max = toolbox.FindMax( errs[i], NSLICES );
