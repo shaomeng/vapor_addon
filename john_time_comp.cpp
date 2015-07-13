@@ -308,7 +308,6 @@ int main(int argc, char **argv) {
 	cout << endl;
 	cout << endl;
 	
-/*
 	cout << "Test 2dp1d \n";
 	test2dp1d(wname, srcarr, dstarr);
 
@@ -320,7 +319,6 @@ int main(int argc, char **argv) {
     cout << "L2 = " << l2 << endl;
     cout << "LMax = " << lmax << endl;
     cout << "RMS = " << rms << endl;
-*/
 
     delete[] srcarr;
     delete[] dstarr;
