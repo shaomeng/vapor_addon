@@ -15,18 +15,18 @@ Cube3D::Cube3D( string filename, string wavename,
     _NX = NX;
     _NY = NY;
     _NZ = NZ;
-    _C = NULL;
     _L = NULL;
     
-    ReadFile();
     _mw = new MatWaveWavedec( wavename );
     _nlevels = min( min(_mw->wmaxlev(NX), _mw->wmaxlev(NY)), _mw->wmaxlev(NZ));
     _clen = _mw->coefflength3( NX, NY, NZ, _nlevels );
     assert( _clen == NX * NY * NZ );
+    _C = new float[ _clen ];
+    ReadFile( _C );
 }
 
 void
-Cube3D::ReadFile(  )
+Cube3D::ReadFile( float* buf )
 {
     FILE* f = fopen( _filename.c_str(), "rb" );
     if( f != NULL ) {
@@ -35,10 +35,10 @@ Cube3D::ReadFile(  )
 
         size_t totallen = _NX*_NY*_NZ;
         assert (size == 4*_NX*_NY*_NZ );
-        if( _C == NULL )  _C = new float[ totallen ];
+        assert ( buf != NULL );
 
         fseek( f, 0, SEEK_SET );
-        size_t rsize = fread( _C, sizeof(float), totallen, f);
+        size_t rsize = fread( buf, sizeof(float), totallen, f);
         fclose( f );
         if( rsize != totallen ) {
             cerr << "read size error: " << rsize << endl;
@@ -133,6 +133,32 @@ Cube3D::CullCoeffs( float t )
             if( _C[i] < t && _C[i] > nt )
                 _C[i] = 0.0;
     }
+}
+
+void 
+Evaluates( double& rms, double& lmax )
+{
+    float* raw = new float[ _clen ];
+    ReadFile( raw );
+
+    double sum = 0.0;
+    double c = 0.0;
+    double max = 0.0;
+    double tmp;
+    for( size_t i = 0; i < _clen; i++) {
+        tmp = (double)raw[i] - (double)_C[i];
+        if (tmp < 0)        tmp *= -1.0;
+        if (tmp > max)      max = tmp;
+        double y = tmp * tmp - c;
+        double t = sum + y;
+        c = (t - sum) - y;
+        sum = t;
+    }
+    sum /= double(_clen);
+    sum = sqrt( sum );
+    
+    rms = sum;
+    lmax = max;
 }
 
 float
