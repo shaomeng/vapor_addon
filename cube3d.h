@@ -33,7 +33,7 @@ public:
     float GetCoeff( size_t idx );
     void PutCoeff( size_t idx, float c );
     void CullCoeffs( float t ); // the threshold, t, must be positive.
-    void Evaluate( double& rms, double& lmax );
+    void Evaluates( double& rms, double& lmax );
 
     void Print10Elements();
 

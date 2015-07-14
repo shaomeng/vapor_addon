@@ -106,7 +106,7 @@ Cube3D::GetCoeff( size_t idx )
 }
 
 void 
-PutCoeff( size_t idx, float c )
+Cube3D::PutCoeff( size_t idx, float c )
 {
     if( _C == NULL ) {
         cerr << "\tCube3D::PutCoeff( int idx, float c ): _C == NULL!" << endl;
@@ -136,7 +136,7 @@ Cube3D::CullCoeffs( float t )
 }
 
 void 
-Evaluates( double& rms, double& lmax )
+Cube3D::Evaluates( double& rms, double& lmax )
 {
     float* raw = new float[ _clen ];
     ReadFile( raw );
