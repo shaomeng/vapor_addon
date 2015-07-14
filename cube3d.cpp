@@ -79,11 +79,7 @@ Cube3D::Reconstruct( int ratio )
 {
     if( ratio > 1 ) {   // cull coefficients
         float nth = FindCoeffThreshold(ratio);  // nth largest, indexing from 1.
-        float nnth = -1.0 * nth;
-
-        for( size_t i = 0; i < _clen; i++ )
-            if( _C[i] < nth && _C[i] > nnth )
-                _C[i] = 0.0;
+        CullCoeffs( nth );
     }
     float* buf = new float[ _NX * _NY * _NZ ];
     int rc = _mw -> waverec3( _C, _L, _nlevels, buf );
@@ -94,6 +90,50 @@ Cube3D::Reconstruct( int ratio )
     return rc;
 }
 
+float
+Cube3D::GetCoeff( size_t idx )
+{
+    if( _C == NULL ) {
+        cerr << "\tCube3D::GetCoeff( int idx ): _C == NULL!" << endl;
+        exit (1);
+    }
+    else if( idx >= _clen ) {
+        cerr << "\tCube3D::GetCoeff( int idx ): idx out of range:" << endl;
+        exit (1);
+    }
+    
+    return _C[idx];
+}
+
+void 
+PutCoeff( size_t idx, float c )
+{
+    if( _C == NULL ) {
+        cerr << "\tCube3D::PutCoeff( int idx, float c ): _C == NULL!" << endl;
+        exit (1);
+    }
+    else if( idx >= _clen ) {
+        cerr << "\tCube3D::PutCoeff( int idx, float c ): idx out of range:" << endl;
+        exit (1);
+    }
+
+    _C[idx] = c;
+}
+
+void
+Cube3D::CullCoeffs( float t )
+{
+    if( t < 0 )
+        cerr << "\tCube3D::CullCoeffs( float t ): t < 0!" << endl;
+    else if( _C == NULL )
+        cerr << "\tCube3D::CullCoeffs( int idx ): _C == NULL!" << endl;
+    else{
+        float nt = -1.0 * t;
+        for( size_t i = 0; i < _clen; i++ )
+            if( _C[i] < t && _C[i] > nt )
+                _C[i] = 0.0;
+    }
+}
 
 float
 Cube3D::FindCoeffThreshold( int ratio )
