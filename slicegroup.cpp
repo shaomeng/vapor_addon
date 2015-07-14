@@ -1,12 +1,12 @@
-#include "vapor/SamSliceGroup3.h"
+#include "slicegroup.h"
 
 using namespace VAPoR;
 
-SamSliceGroup3::SamSliceGroup3(string wavename, size_t rawlen, size_t nslices)
+SliceGroup::SliceGroup(string wavename )
 {
     _wavename = wavename;
-    _rawlen = rawlen;
-    _nslices = nslices;
+    _rawlen = 0;
+    _nslices = 0;
 
     _buf = NULL;
     _L1d = NULL;
@@ -31,108 +31,109 @@ SamSliceGroup3::~SamSliceGroup3()
 }
 
 void
-SamSliceGroup3::UpdateRawPtr( vector< float* > &rawarr )
+SliceGroup::AddSlice( Cube3D* slice )
 {
-    assert( rawarr.size() == _nslices );
-    if( _buf == NULL ) {
-        _buf = new float[ _rawlen * _nslices ];
-    }
-    if( _buf == NULL ) {
-        cerr << "SamSliceGroup3 memory allocation failed!" << endl;
-        exit(1);
-    }
-
-    #pragma omp parallel for
-    for( size_t i = 0; i < _rawlen; i++ )
-        for( size_t j = 0; j < _nslices; j++ )
-            _buf[i*_nslices + j] = rawarr[j][i];
+    _sliceVec.push_back( slice );
 }
 
 void
-SamSliceGroup3::Decompose( )
+SliceGroup::Initialize( )
 {
-    if( _L1d == NULL )     _L1d = new size_t[ _nlevels1d + 2 ];
-    _mw -> computeL( _nslices, _nlevels1d, _L1d );
-    if( _C1d == NULL )      _C1d = new float[ _rawlen * _nslices ];
+    _nslices = _sliceVec.size();
+    _sliceLen = _sliceVec[0] -> GetCoeffLen();
+    assert( _buf == NULL );
+    _buf = new float[ _nslices * _sliceLen ];
+    assert( _buf != NULL );
+    
+//    #pragma omp parallel for
+    for( size_t i = 0; i < _sliceLen; i++ )
+        for( size_t j = 0; j < _nslices; j++ )
+            _buf[i*_nslices + j] = _sliceVec[j] -> GetCoeff(i);
+}
 
-    #pragma omp parallel
+
+void
+SliceGroup::Decompose( )
+{
+//    #pragma omp parallel
     {
         MatWaveWavedec mv( _wavename );
         size_t l1d[ _nlevels1d+2 ];
 
-        #pragma omp for
-        for( size_t i = 0; i < _rawlen; i++ )
+//        #pragma omp for
+        for( size_t i = 0; i < _slicelen; i++ )
         {
             float* src = _buf + i*_nslices;
-            float* dst = _C1d + i*_nslices;
+            float dst[ _nslices ];
             int rc = mv.wavedec( src, _nslices, _nlevels1d, dst, l1d );
             assert (rc >= 0 );
+            memcpy( src, dst, sizeof(float) * _nslices );
         }
     }
-
 }
 
 void
-SamSliceGroup3::Reconstruct( int ratio )
+SliceGroup::Reconstruct( int ratio )
 {
-
-    float nth = 0.0;
-    if( ratio > 1 )
-        nth = FindCoeffThreshold( ratio ); // use coeffs larger than nth.
+    float L1d[ _nlevels1d + 2 ];
+    _mw -> computeL( _nslices, _nlevels1d, L1d );
+    float nth = FindCoeffThreshold( ratio ); // use coeffs larger than nth.
     float nnth = -1.0 * nth;
-    size_t totalC = _rawlen * _clen1d;
+    size_t totalC = _sliceLen * _nslices;
 
-
-    #pragma omp parallel
+//    #pragma omp parallel
     {
         MatWaveWavedec mv( _wavename );
         float src[ _nslices ];
 
-        #pragma omp for
-        for( size_t i = 0; i < _rawlen; i++ )
+//        #pragma omp for
+        for( size_t i = 0; i < _sliceLen; i++ )
         {
             for( size_t j = 0; j < _nslices; j++ )
             {
-                float c = _C1d[ i*_nslices + j ];
+                float c = _buf[ i*_nslices + j ];
                 if( c < nth && c > nnth )   src[j] = 0.0;
                 else                        src[j] = c;
             }
             float* dst = _buf + i*_nslices;
-            int rc = mv.waverec( src, _L1d, _nlevels1d, dst );
+            int rc = mv.waverec( src, L1d, _nlevels1d, dst );
             assert (rc >= 0 );
         }
-        
     }
 }
 
 void
-SamSliceGroup3::FillReconstructedPtr( int idx, float* ptr )
+SliceGroup::UpdateSlices( )
 {
-    assert( ptr != NULL );
-    #pragma omp parallel for
-    for( size_t i = 0; i < _rawlen; i++ )
-        ptr[i] = _buf[ i*_nslices + idx ];
+    for( size_t i = 0; i < _sliceLen; i++ )
+        for( size_t j = 0; j < _nslices; j++ )
+            _sliceVec[j] -> PutCoeff( i, _buf[ i*_nslices+j ] );
 }
 
 
 float
-SamSliceGroup3::FindCoeffThreshold( int ratio )
+SliceGroup::FindCoeffThreshold( int ratio )
 {
-    size_t nCoeffs = _nslices * _rawlen;
+    if( ratio < 1 ) {
+        cerr << "SliceGroup::FindCoeffThreshold( int ratio ): ratio < 1 " << endl;
+        return 0.0;
+    }
+    else if (ratio == 1)
+        return 0.0;
+
+    size_t nCoeffs = _nslices * _sliceLen;
     size_t n = nCoeffs / ratio - 1; // the nth largest, indexing from 1.
 
-
     vector<float> allCoeffs( nCoeffs, 0.0 );
-    #pragma omp parallel for
+//    #pragma omp parallel for
     for( size_t i = 0; i < nCoeffs; i++ )
-            if ( _C1d[i] > 0 )
-                allCoeffs[i] = ( -1.0 * _C1d[i] ); 
+            if ( _buf[i] > 0 )
+                allCoeffs[i] = ( -1.0 * _buf[i] ); 
             else
-                allCoeffs[i] = _C1d[i]; 
+                allCoeffs[i] = _buf[i]; 
     
     std::nth_element( allCoeffs.begin(), allCoeffs.begin()+n, allCoeffs.end() );
     float nth = -1.0 * allCoeffs[n];
-
 
     return nth;
 }

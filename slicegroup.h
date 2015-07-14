@@ -6,6 +6,9 @@
  *      2) perform 1D DWT on all coefficients 
  *      3) sorts all coefficients and picks out big ones
  *      4) restores the coefficients by performing 1D IDWT
+ *
+ * Programmer: Samuel Li
+ * Date: 7/14/2015
  */
 
 #ifndef _SLICEGROUP_
@@ -15,16 +18,18 @@
 #include <algorithm>
 #include <cassert>
 #include "vapor/MatWaveWavedec.h"
+#include "cube3d.h"
 
 namespace VAPoR{
 
-class SLICEGROUP{
+class SliceGroup{
 
 public:
-    SLICEGROUP( string wavename, size_t rawlen, size_t nslices );
-    ~SLICEGROUP();
+    SliceGroup( string wavename );
+    ~SliceGroup();
 
-    void UpdateRawPtr( vector< float* > &rawarr  );
+    void AddSlice( Cube3D* cube );
+    void Initialize();
 
     void Decompose();
 
@@ -32,25 +37,18 @@ public:
     void Reconstruct( int ratio );
 
     // Get the ith coeff array. This is for the ith file.
-    void FillReconstructedPtr( int idx, float* ptr );
+    void UpdateSlices( );
 
-/*
-    void FreeReconstructed( int i );
-    void FreeCoeffs( );
-    void FreeRaw( int i );
-
-    void Print1DRaw();
-    void Print1DCoeffs();
-*/
 
 protected:
     string _wavename;
-    size_t _rawlen;                    // length of each raw data array
+    size_t _sliceLen;                    // length of each slice of data 
     size_t _nslices;
     size_t _nlevels1d;
-    size_t _clen1d;
 
     MatWaveWavedec* _mw;
+
+    vector< Cube3D* > _sliceVec;
 
     size_t* _L1d;           // bookkeeping array, shared among all 1D arrays
     float* _buf;            // huge array that stores all the intermediate numbers 
