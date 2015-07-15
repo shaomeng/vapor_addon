@@ -6,17 +6,15 @@ SliceGroup::SliceGroup(string wavename )
 {
     _wavename = wavename;
     _nslices = 0;
-    _nlevels1d = 0
+    _nlevels1d = 0;
     _sliceLen = 0;
     _buf = NULL;
     _mw = new MatWaveWavedec( _wavename );
 }
 
-SamSliceGroup3::~SamSliceGroup3()
+SliceGroup::~SliceGroup()
 {
     if( _buf )                      delete[] _buf;
-    if( _L1d )                      delete[] _L1d; 
-    if( _C1d )                      delete[] _C1d; 
     if( _mw )                       delete _mw;
 }
 
@@ -52,7 +50,7 @@ SliceGroup::Decompose( )
         size_t l1d[ _nlevels1d+2 ];
 
 //        #pragma omp for
-        for( size_t i = 0; i < _slicelen; i++ )
+        for( size_t i = 0; i < _sliceLen; i++ )
         {
             float* src = _buf + i*_nslices;
             float dst[ _nslices ];
@@ -66,11 +64,10 @@ SliceGroup::Decompose( )
 void
 SliceGroup::Reconstruct( int ratio )
 {
-    float L1d[ _nlevels1d + 2 ];
+    size_t L1d[ _nlevels1d + 2 ];
     _mw -> computeL( _nslices, _nlevels1d, L1d );
     float nth = FindCoeffThreshold( ratio ); // use coeffs larger than nth.
     float nnth = -1.0 * nth;
-    size_t totalC = _sliceLen * _nslices;
 
 //    #pragma omp parallel
     {
