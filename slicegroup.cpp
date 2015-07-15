@@ -5,21 +5,11 @@ using namespace VAPoR;
 SliceGroup::SliceGroup(string wavename )
 {
     _wavename = wavename;
-    _rawlen = 0;
     _nslices = 0;
-
+    _nlevels1d = 0
+    _sliceLen = 0;
     _buf = NULL;
-    _L1d = NULL;
-    _C1d = NULL;
-    
     _mw = new MatWaveWavedec( _wavename );
-    _nlevels1d = _mw -> wmaxlev( _nslices );
-    _clen1d    = _mw -> coefflength( _nslices, _nlevels1d );
-    assert( _clen1d = _nslices );
-    if( _clen1d != _nslices ) {
-        cerr << "SamSliceGroup3 error: clen1d != nslices " << endl;
-        exit(1);
-    }
 }
 
 SamSliceGroup3::~SamSliceGroup3()
@@ -40,6 +30,7 @@ void
 SliceGroup::Initialize( )
 {
     _nslices = _sliceVec.size();
+    _nlevels1d = _mw -> wmaxlev( _nslices );
     _sliceLen = _sliceVec[0] -> GetCoeffLen();
     assert( _buf == NULL );
     _buf = new float[ _nslices * _sliceLen ];
@@ -137,56 +128,4 @@ SliceGroup::FindCoeffThreshold( int ratio )
 
     return nth;
 }
-
-
-/*
-void
-SamSliceGroup3::FreeReconstructed( int i )
-{
-    assert( i < _reconstructed.size() );
-    if( _reconstructed[i] ) {
-            delete[] _reconstructed[i];
-            _reconstructed[i] = NULL;
-    }
-}
-
-void
-SamSliceGroup3::FreeRaw( int i )
-{
-    assert( i < _raw.size() );
-    if( _raw[i] ) {
-            delete[] _raw[i];
-            _raw[i] = NULL;
-    }
-}
-
-void
-SamSliceGroup3::FreeCoeffs()
-{
-    for( size_t i = 0; i < _coeffs.size(); i++ )
-        if( _coeffs[i] ) {
-            delete[] _coeffs[i];
-            _coeffs[i] = NULL;
-        }
-    if( _sigmapGroup ) {
-        delete[] _sigmapGroup;
-        _sigmapGroup = NULL;
-    }
-}
-
-void
-SamSliceGroup3::Print1DRaw()
-{
-    for( int i = 0; i < _nslices; i++ )
-        cerr << "\t" << _raw[i][0] << endl;
-}
-
-
-void
-SamSliceGroup3::Print1DCoeffs()
-{
-    for( int i = 0; i < _nslices; i++ )
-        cerr << "\t" << _coeffs[0][i] << endl;
-}
-*/
 

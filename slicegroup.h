@@ -33,7 +33,6 @@ public:
 
     void Decompose();
 
-    // Decompress the coefficients from Compress1()
     void Reconstruct( int ratio );
 
     // Get the ith coeff array. This is for the ith file.
@@ -50,10 +49,7 @@ protected:
 
     vector< Cube3D* > _sliceVec;
 
-    size_t* _L1d;           // bookkeeping array, shared among all 1D arrays
     float* _buf;            // huge array that stores all the intermediate numbers 
-    float* _C1d;            // huge array that stores decompose results 
-
 
     float FindCoeffThreshold( int ratio );
 };
