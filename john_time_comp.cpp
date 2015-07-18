@@ -10,9 +10,9 @@
 using namespace VAPoR;
 
 
-const int NX = 504;
-const int NY = 504;
-const int NZ = 504;
+const int NX = 64;
+const int NY = 64;
+const int NZ = 64;
 bool KeepAppCoeff = false;
 float cratio = 4.0;
 
@@ -161,10 +161,6 @@ void test2dp1d(string wavename, const float *srcarr, float *dstarr)
 	}
 	}
 
-// Sam
-//cerr << "Sam: printing the first 18 elements before DWT: " << endl;
-//for( int i = 0; i < NZ; i++ )
-//    cerr << "\t" << buf1d[0][i] << endl;
 
 	// Forward 1D DWTs
 	//
@@ -172,11 +168,6 @@ void test2dp1d(string wavename, const float *srcarr, float *dstarr)
 		int rc = mw.wavedec(buf1d[i], NZ, nlevels1d, C1d[i], L1d);
 		assert (rc>=0);
 	}
-
-// Sam
-//cerr << "Sam: printing the first 18 elements after DWT: " << endl;
-//for( int i = 0; i < NZ; i++ )
-//    cerr << "\t" << C1d[0][i] << endl;
 
 	// Copy coefficients to single vector for easy sorting
 	//
@@ -252,8 +243,8 @@ void compute_error(
     l2 = 0.0;
     lmax = 0.0;
     rms = 0.0;
-    float sum = 0.0;
-    float c = 0.0;
+    double sum = 0.0;
+    double c = 0.0;
     for (int k=0; k<nz; k++) {
         for (int j=0; j<ny; j++) {
             for (int i=0; i<nx; i++) {
@@ -261,16 +252,14 @@ void compute_error(
                 l1 += delta;
                 l2 += delta * delta;
                 lmax = delta > lmax ? delta : lmax;
-                float y = delta * delta - c;
-                float t = sum + y;
+                double y = delta * delta - c;
+                double t = sum + y;
                 c = (t - sum ) - y;
                 sum = t;
             }
         }
     }
-//cerr << "sum, l2 are " << sum << "  " << l2 << endl;
     l2 = sqrt(l2);
-//    rms = l2 / (nx*ny*nz);
     rms = sqrt( sum / (1.0 * nx * ny * nz ));
 }
 
@@ -278,7 +267,6 @@ int main(int argc, char **argv) {
 
 	assert(argc == 2);
 	string file = argv[1];
-//    string file = "/Users/samuel/Backyard/256cubes/e0.float";
 
 	float *srcarr = new float[NX*NY*NZ];
 	float *dstarr = new float[NX*NY*NZ];

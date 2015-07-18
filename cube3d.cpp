@@ -142,7 +142,7 @@ Cube3D::CullCoeffs( float t )
 }
 
 void 
-Cube3D::Evaluates( double& rms, double& lmax )
+Cube3D::Evaluate( double& rms, double& lmax )
 {
     float* raw = new float[ _clen ];
     ReadFile( raw );

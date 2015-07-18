@@ -10,6 +10,8 @@ SliceGroup::SliceGroup(string wavename )
     _sliceLen = 0;
     _buf = NULL;
     _mw = new MatWaveWavedec( _wavename );
+    _rms = 0.0;
+    _lmax = 0.0;
 }
 
 SliceGroup::~SliceGroup()
@@ -126,3 +128,26 @@ SliceGroup::FindCoeffThreshold( int ratio )
     return nth;
 }
 
+void 
+SliceGroup::Evaluate()
+{
+    double rmsArr[ _nslices ];
+    double lmaxArr[ _nslices ];
+    for( int i = 0; i < _nslices; i++ )
+        _sliceVec[i]->Evaluate( rmsArr[i], lmaxArr[i] );
+
+    double sum = 0.0;
+    double c = 0.0;
+    for( int i = 0; i < _nslices; i++ ) {
+        double y = rmsArr[i] * rmsArr[i] - c;
+        double t = sum + y;
+        c = (t - sum) - y;
+        sum = t;
+    }
+    sum /= double( _nslices );
+    _rms = sqrt( sum );
+
+    for( int i = 0; i < _nslices; i++ )
+        if( lmaxArr[i] > _lmax )
+            _lmax = lmaxArr[i];
+}
