@@ -30,7 +30,6 @@ public:
     int Decompose();
     int Reconstruct(int ratio);
 
-    size_t GetCoeffLen();
     float GetCoeff( size_t idx );
     void PutCoeff( size_t idx, float c );
     void CullCoeffs( float t ); // the threshold, t, must be positive.
@@ -38,6 +37,8 @@ public:
 
     void Print10Elements();
 
+    void ReloadInputFile()  { ReadFile( _C ); }
+    size_t GetCoeffLen()    { return _clen; }
 
 protected:
     void ReadFile( float* buf );
@@ -52,11 +53,6 @@ protected:
     size_t _clen;
     float* _C;
     size_t* _L;
-
-/*
-    float* _raw;
-    float* _reconstructed;
-*/
 
     float FindCoeffThreshold( int ratio );
 };

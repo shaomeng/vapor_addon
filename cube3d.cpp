@@ -90,12 +90,6 @@ Cube3D::Reconstruct( int ratio )
     return rc;
 }
 
-size_t
-Cube3D::GetCoeffLen()
-{
-    return _clen;
-}
-
 float
 Cube3D::GetCoeff( size_t idx )
 {
