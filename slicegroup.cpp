@@ -10,8 +10,8 @@ SliceGroup::SliceGroup(string wavename )
     _sliceLen = 0;
     _buf = NULL;
     _mw = new MatWaveWavedec( _wavename );
-    _rms = 0.0;
-    _lmax = 0.0;
+//    _rms = 0.0;
+//    _lmax = 0.0;
 }
 
 SliceGroup::~SliceGroup()
@@ -128,6 +128,11 @@ SliceGroup::FindCoeffThreshold( int ratio )
     return nth;
 }
 
+/*
+ * Later I decide to put this function in the main file.
+ * SliceGroup then only in charge of decompose and reconstruct.
+ *
+ *
 void 
 SliceGroup::Evaluate()
 {
@@ -151,3 +156,4 @@ SliceGroup::Evaluate()
         if( lmaxArr[i] > _lmax )
             _lmax = lmaxArr[i];
 }
+ */
