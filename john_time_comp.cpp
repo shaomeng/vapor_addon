@@ -14,9 +14,7 @@ const int NX = 64;
 const int NY = 64;
 const int NZ = 64;
 bool KeepAppCoeff = false;
-float cratio = 4.0;
 
-const size_t NumCoeff = (float) (NX*NY*NZ) / cratio;
 
 inline bool my_compare(const float &x1, const float &x2) {
     return(fabsf(x1) > fabsf(x2));
@@ -25,7 +23,7 @@ inline bool my_compare(const float &x1, const float &x2) {
 //
 // Compress and decompress a 3D volume using a 3D wavelet transform
 //
-void test3d(string wavename, const float *srcarr, float *dstarr) {
+void test3d(string wavename, const float *srcarr, float *dstarr, float cratio ) {
 
 	for (size_t i=0; i<NX*NY*NZ; i++) dstarr[i] = 0.0;
 
@@ -56,6 +54,7 @@ void test3d(string wavename, const float *srcarr, float *dstarr) {
 	int rc = mw.wavedec3(srcarr, NX, NY, NZ, nlevels, C, L);
 	assert (rc>=0);
 
+    size_t NumCoeff = (float) (NX*NY*NZ) / cratio;
 	assert(NumCoeff >= startCoeffIdx);
 
 	//
@@ -98,7 +97,7 @@ void test3d(string wavename, const float *srcarr, float *dstarr) {
 // transform along X and Y axes, followed by a 1D transform along
 // the Z axis.
 //
-void test2dp1d(string wavename, const float *srcarr, float *dstarr) 
+void test2dp1d(string wavename, const float *srcarr, float *dstarr, float cratio) 
 {
 
 	for (size_t i=0; i<NX*NY*NZ; i++) dstarr[i] = 0.0;
@@ -185,6 +184,7 @@ void test2dp1d(string wavename, const float *srcarr, float *dstarr)
     //
     sort(sortedC.begin(), sortedC.end(), my_compare);
 
+    size_t NumCoeff = (float) (NX*NY*NZ) / cratio;
 	size_t ti = NumCoeff - 1;
 
 	double threshold  = sortedC[ti];
@@ -263,10 +263,11 @@ void compute_error(
     rms = sqrt( sum / (1.0 * nx * ny * nz ));
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char* argv[] ) {
 
-	assert(argc == 2);
-	string file = argv[1];
+	assert(argc == 3);
+    float cratio = atof( argv[1] );
+	string file = argv[2];
 
 	float *srcarr = new float[NX*NY*NZ];
 	float *dstarr = new float[NX*NY*NZ];
@@ -282,7 +283,7 @@ int main(int argc, char **argv) {
 
 
 	cout << "Test 3d\n";
-	test3d(wname, srcarr, dstarr);
+	test3d(wname, srcarr, dstarr, cratio);
 
     double l1, l2, lmax, rms;
 	compute_error(
@@ -297,7 +298,7 @@ int main(int argc, char **argv) {
 	cout << endl;
 	
 	cout << "Test 2dp1d \n";
-	test2dp1d(wname, srcarr, dstarr);
+	test2dp1d(wname, srcarr, dstarr, cratio);
 
 	compute_error(
 		srcarr, dstarr, NX, NY, NZ, l1, l2, lmax, rms
@@ -307,6 +308,8 @@ int main(int argc, char **argv) {
     cout << "L2 = " << l2 << endl;
     cout << "LMax = " << lmax << endl;
     cout << "RMS = " << rms << endl;
+	cout << endl;
+	cout << endl;
 
     delete[] srcarr;
     delete[] dstarr;
