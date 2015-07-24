@@ -1,5 +1,6 @@
 /*
  * This is the main file for performing DWT, using cube3d and slicegroup.
+ * This version compares 3D vs (3D + 1D)
  *
  * Programmer: Samuel Li
  * Date: 7/17/2015
@@ -13,7 +14,7 @@
 #define NX 64
 #define NY 64
 #define NZ 64
-#define NSLICES 10
+#define NSLICES 20
 
 using namespace VAPoR;
 
@@ -103,7 +104,6 @@ int main( int argc, char* argv[] )
         slices[i] -> ReloadInputFile();
         slices[i] -> Decompose();
     }
-
     /*
      * Then apply temporal compression.
      */
@@ -114,7 +114,6 @@ int main( int argc, char* argv[] )
     group.Decompose( );
     group.Reconstruct( ratio );
     group.UpdateSlices();
-
     /*
      * Reconstruct on individual slices, and then evaluate.
      */
