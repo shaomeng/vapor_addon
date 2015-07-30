@@ -9,12 +9,11 @@
 
 #include "cube3d.h"
 #include "slicegroup.h"
-#include <sys/time.h>
 
-#define NX 64
-#define NY 64
-#define NZ 64
-#define NSLICES 20
+#define NX 128 
+#define NY 128
+#define NZ 128
+#define NSLICES 10
 
 using namespace VAPoR;
 
@@ -53,26 +52,21 @@ int main( int argc, char* argv[] )
     string wavenameXYZ = "bior4.4";
     string wavenameT = "bior4.4";
     string* filenames = new string[ NSLICES ];
-    struct timeval t_now;
-    double timer1, timer2;
 
     
-    /*
-     * Test on the real big data set.
-     */
-/*
-    string prefix = "/opt/Public_Data/15plume3d_1024z/" + varname + "1024z.";
-    for( long long i = 0; i < NSLICES; i++ )
-        filenames[i] = prefix + to_string(startIdx + i) + ".float";
-*/
 
     /* 
-     * Test on the small test data set.
+     * Initialize filenames.
      */
-    string prefix = "/home/samuel/Git/utilities/small_test_datasets/plume_64/" 
-                    + varname + ".";
+    char namebuf[64];
+    string prefix = "/home/samuel/Datasets/Ghost/500/" + varname + ".";
     for( int i = 0; i < NSLICES; i++ )
-        filenames[i] = prefix + to_string(startIdx + i) + ".float";
+    {
+        sprintf( namebuf, "%04d.float", i + startIdx );
+        filenames[i] = prefix + namebuf;
+        if( i == 0 )            printf( "Start sample idx = %s\n", namebuf );
+        if( i == NSLICES-1 )    printf( " End  sample idx = %s\n", namebuf );
+    }
 
     Cube3D** slices = new Cube3D*[ NSLICES ];
     for( int i = 0; i < NSLICES; i++ ) {
@@ -93,8 +87,8 @@ int main( int argc, char* argv[] )
     }
     double lmax = FindMax( lmaxArr, NSLICES );
     double rms = CalcRMS( rmsArr, NSLICES );
-    cerr << "==> 3D compression at ratio " << ratio << endl;
-    cerr << "\tRMS, MAX:  " << rms << ", " << lmax << endl;
+    cout  << "==> 3D compression at ratio " << ratio << endl;
+    cout  << "\tRMS, MAX:  " << rms << ", " << lmax << endl;
 
 
     /*
@@ -123,8 +117,8 @@ int main( int argc, char* argv[] )
     }
     lmax = FindMax( lmaxArr, NSLICES );
     rms = CalcRMS( rmsArr, NSLICES );
-    cerr << "==> 3D+1D compression at ratio " << ratio << endl;
-    cerr << "\tRMS, MAX:  " << rms << ", " << lmax << endl;
+    cout  << "==> 3D+1D compression at ratio " << ratio << endl;
+    cout  << "\tRMS, MAX:  " << rms << ", " << lmax << endl;
         
     
     for( int i = 0; i < NSLICES; i++ )
