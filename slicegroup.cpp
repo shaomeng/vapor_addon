@@ -36,7 +36,6 @@ SliceGroup::Initialize( )
     _buf = new float[ _nslices * _sliceLen ];
     assert( _buf != NULL );
     
-//    #pragma omp parallel for
     for( size_t i = 0; i < _sliceLen; i++ )
         for( size_t j = 0; j < _nslices; j++ )
             _buf[i*_nslices + j] = _sliceVec[j] -> GetCoeff(i);
@@ -46,20 +45,16 @@ SliceGroup::Initialize( )
 void
 SliceGroup::Decompose( )
 {
-//    #pragma omp parallel
-    {
-        MatWaveWavedec mv( _wavename );
-        size_t l1d[ _nlevels1d+2 ];
+    MatWaveWavedec mv( _wavename );
+    size_t l1d[ _nlevels1d+2 ];
 
-//        #pragma omp for
-        for( size_t i = 0; i < _sliceLen; i++ )
-        {
-            float* src = _buf + i*_nslices;
-            float dst[ _nslices ];
-            int rc = mv.wavedec( src, _nslices, _nlevels1d, dst, l1d );
-            assert (rc >= 0 );
-            memcpy( src, dst, sizeof(float) * _nslices );
-        }
+    for( size_t i = 0; i < _sliceLen; i++ )
+    {
+        float* src = _buf + i*_nslices;
+        float dst[ _nslices ];
+        int rc = mv.wavedec( src, _nslices, _nlevels1d, dst, l1d );
+        assert (rc >= 0 );
+        memcpy( src, dst, sizeof(float) * _nslices );
     }
 }
 
@@ -71,24 +66,20 @@ SliceGroup::Reconstruct( int ratio )
     float nth = FindCoeffThreshold( ratio ); // use coeffs larger than nth.
     float nnth = -1.0 * nth;
 
-//    #pragma omp parallel
-    {
-        MatWaveWavedec mv( _wavename );
-        float src[ _nslices ];
+    MatWaveWavedec mv( _wavename );
+    float src[ _nslices ];
 
-//        #pragma omp for
-        for( size_t i = 0; i < _sliceLen; i++ )
+    for( size_t i = 0; i < _sliceLen; i++ )
+    {
+        for( size_t j = 0; j < _nslices; j++ )
         {
-            for( size_t j = 0; j < _nslices; j++ )
-            {
-                float c = _buf[ i*_nslices + j ];
-                if( c < nth && c > nnth )   src[j] = 0.0;
-                else                        src[j] = c;
-            }
-            float* dst = _buf + i*_nslices;
-            int rc = mv.waverec( src, L1d, _nlevels1d, dst );
-            assert (rc >= 0 );
+            float c = _buf[ i*_nslices + j ];
+            if( c < nth && c > nnth )   src[j] = 0.0;
+            else                        src[j] = c;
         }
+        float* dst = _buf + i*_nslices;
+        int rc = mv.waverec( src, L1d, _nlevels1d, dst );
+        assert (rc >= 0 );
     }
 }
 
