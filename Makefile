@@ -25,20 +25,20 @@ VAPOR_LIB=${VAPOR_INSTALL}/lib
 VAPOR_BIN=${VAPOR_INSTALL}/bin
 
 john_time_comp: john_time_comp.cpp
-	$(CXX) $(CXXFLAGS) -I${VAPOR_INC} -I. john_time_comp.cpp -o bin/john_time_comp.o
+	$(CXX) john_time_comp.cpp -o bin/john_time_comp.o $(CXXFLAGS) -I${VAPOR_INC} -I. 
 	$(CXX) bin/john_time_comp.o -o bin/john_time_comp $(LDFLAGS) -L${VAPOR_BIN} -L$(VAPOR_LIB) -lwasp -lcommon 
-#	g++ -O2 -o bin/john_time_comp.o -c -std=c++0x -DLINUX -Wall -Wno-sign-compare  -D__USE_LARGEFILE64 -pthread -fPIC -m64 -I${VAPOR_INC} -I. -DMODELS john_time_comp.cpp
-#	g++ bin/john_time_comp.o -o bin/john_time_comp -m64 -lrt -pthread   -Wl,-rpath, -L${VAPOR_LIB} -lwasp -lcommon 
 
 cube3d.o: cube3d.cpp cube3d.h
-	g++ -o bin/cube3d.o -c -std=c++0x -DLINUX -Wall -Wno-sign-compare  -D__USE_LARGEFILE64 -pthread -fPIC -m64 -g -I${VAPOR_INC} -I. -DMODELS cube3d.cpp
+	$(CXX) cube3d.cpp -o bin/cube3d.o $(CXXFLAGS) -I${VAPOR_INC} -I. 
 
 slicegroup.o: slicegroup.cpp slicegroup.h
-	g++ -o bin/slicegroup.o -c -std=c++0x -DLINUX -Wall -Wno-sign-compare  -D__USE_LARGEFILE64 -pthread -fPIC -m64 -g -I${VAPOR_INC}  -I. -DMODELS slicegroup.cpp
+	$(CXX) slicegroup.cpp  -o bin/slicegroup.o $(CXXFLAGS) -I${VAPOR_INC}  -I.
 
 temporal: temporal.cpp bin/cube3d.o bin/slicegroup.o
-	g++ -o bin/temporal.o -c -std=c++0x -DLINUX -Wall -Wno-sign-compare  -D__USE_LARGEFILE64 -pthread -fPIC -m64 -g -I${VAPOR_INC} -I. -DMODELS temporal.cpp
-	g++ bin/temporal.o bin/cube3d.o bin/slicegroup.o -o bin/temporal -m64 -lrt -pthread   -Wl,-rpath, -L${VAPOR_LIB} -lvdc -lwasp -lcommon 
+	$(CXX) temporal.cpp -o bin/temporal.o $(CXXFLAGS) -I${VAPOR_INC} -I. 
+	$(CXX) bin/temporal.o bin/cube3d.o bin/slicegroup.o -o bin/temporal $(LDFLAGS) -L${VAPOR_BIN} -L$(VAPOR_LIB) -lwasp -lcommon 
+#	g++ -o bin/temporal.o -c -std=c++0x -DLINUX -Wall -Wno-sign-compare  -D__USE_LARGEFILE64 -pthread -fPIC -m64 -g -I${VAPOR_INC} -I. -DMODELS temporal.cpp
+#	g++ bin/temporal.o bin/cube3d.o bin/slicegroup.o -o bin/temporal -m64 -lrt -pthread   -Wl,-rpath, -L${VAPOR_LIB} -lvdc -lwasp -lcommon 
 
 clean:
 	rm john_time_comp.o john_time_comp cube3d.o slicegroup.o temporal.o temporal
