@@ -41,4 +41,4 @@ temporal: temporal.cpp bin/cube3d.o bin/slicegroup.o
 #	g++ bin/temporal.o bin/cube3d.o bin/slicegroup.o -o bin/temporal -m64 -lrt -pthread   -Wl,-rpath, -L${VAPOR_LIB} -lvdc -lwasp -lcommon 
 
 clean:
-	rm john_time_comp.o john_time_comp cube3d.o slicegroup.o temporal.o temporal
+	rm bin/*.o bin/john_time_comp bin/temporal
