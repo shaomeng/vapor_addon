@@ -6,7 +6,7 @@ using std::string;
 using std::cerr;
 using std::endl;
 
-// Constructor
+// Constructor for reading a whole file as current cube to work on
 Cube3D::Cube3D( string filename, string wavename, 
                     size_t NX, size_t NY, size_t NZ )
 {
@@ -16,6 +16,10 @@ Cube3D::Cube3D( string filename, string wavename,
     _NY = NY;
     _NZ = NZ;
     _L = NULL;
+
+	// these variables have no effect with this constructor 
+	_NX_total = _NY_total = _NZ_total = 0;
+	_startX = _endX = _startY = _endY = _startZ = _endZ = 0;
     
     _mw = new MatWaveWavedec( wavename );
     _nlevels = min( min(_mw->wmaxlev(NX), _mw->wmaxlev(NY)), _mw->wmaxlev(NZ));
@@ -25,6 +29,40 @@ Cube3D::Cube3D( string filename, string wavename,
     ReadFile( _C );
 }
 
+// Constructor for reading a block out of a big chunck as current cube.
+Cube3D::Cube3D( string filename, string wavename, 
+				size_t NX, size_t NY, size_t NZ,
+				size_t NX_total, size_t NY_total, size_t NZ_total,
+				size_t startX, size_t endX,
+				size_t startY, size_t endY,
+				size_t startZ, size_t endZ )
+{
+    _filename = filename;
+    _wavename = wavename;
+    _NX = NX;
+    _NY = NY;
+    _NZ = NZ;
+    _L = NULL;
+
+	_NX_total = NX_total;
+	_NY_total = NY_total;
+	_NZ_total = NZ_total;
+	_startX = startX;
+	_endX   = endX;
+	_startY = startY;
+	_endY   = endY;
+	_startZ = startZ;
+	_endZ   = endZ;
+	
+    _mw = new MatWaveWavedec( wavename );
+    _nlevels = min( min(_mw->wmaxlev(NX), _mw->wmaxlev(NY)), _mw->wmaxlev(NZ));
+    _clen = _mw->coefflength3( NX, NY, NZ, _nlevels );
+    assert( _clen == NX * NY * NZ );
+    _C = new float[ _clen ];
+    ReadFileChunck( _C );
+}
+
+// Reads the whole file into buffer
 void
 Cube3D::ReadFile( float* buf )
 {
@@ -34,7 +72,7 @@ Cube3D::ReadFile( float* buf )
         size_t size = ftell( f );
 
         size_t totallen = _NX*_NY*_NZ;
-        assert (size == 4*_NX*_NY*_NZ );
+        assert (size == sizeof(float) * _NX*_NY*_NZ );
         assert ( buf != NULL );
 
         fseek( f, 0, SEEK_SET );
@@ -44,6 +82,41 @@ Cube3D::ReadFile( float* buf )
             cerr << "read size error: " << rsize << endl;
             exit(1);
         }
+    }
+    else{
+        cerr << "file open error: " << _filename << endl;
+        exit(1);
+    }
+}
+
+// Reads a chunck of file specified by ranges
+void
+Cube3D::ReadFileChunck( float* buf )
+{
+    FILE* f = fopen( _filename.c_str(), "rb" );
+    if( f != NULL ) {
+        fseek( f, 0, SEEK_END );
+        size_t size = ftell( f );
+
+        size_t totallen = _NX_total * _NY_total * _NZ_total;
+        assert (size == sizeof(float) * totallen );
+        assert ( buf != NULL );
+		float* tmp = new float[ _NX ];
+
+		size_t counter = 0;
+		for( size_t k = _startZ; k < _endZ; k++ )
+			for( size_t j = _startY; j < _endY; j++ )
+			{
+				size_t offset = k * _NX_total * _NY_total + j * _NX_total;
+				fseek( f, offset, SEEK_SET );
+				size_t rsize = fread( tmp, sizeof(float), _NX, f );
+				assert( rsize == _NX );
+				memcpy( (void*)(buf + sizeof(float) * _NX * counter), (void*)tmp, 
+						sizeof(float) * _NX );
+				counter++;
+			}
+		delete[] tmp;
+        fclose( f );
     }
     else{
         cerr << "file open error: " << _filename << endl;

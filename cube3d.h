@@ -7,6 +7,8 @@
  *
  * Programmer: Samuel Li
  * Date: 7/12/2015
+ *
+ * Revision: 11/27/2015
  */
 
 
@@ -26,6 +28,12 @@ class Cube3D{
 public:
     Cube3D( string filename, string wavename, 
               size_t NX, size_t NY, size_t NZ );
+    Cube3D( string filename, string wavename, 
+              size_t NX, size_t NY, size_t NZ,
+			  size_t NX_total, size_t NY_total, size_t NZ_total,
+			  size_t startX, size_t endX,
+			  size_t startY, size_t endY,
+			  size_t startZ, size_t endZ );
     ~Cube3D();
     int Decompose();
     int Reconstruct(int ratio);
@@ -42,11 +50,23 @@ public:
 
 protected:
     void ReadFile( float* buf );
+    void ReadFileChunck( float* buf );
     string _filename;
     string _wavename;
-    size_t _NX;
+
+    size_t _NX;			// dimension of this cube working on
     size_t _NY;
     size_t _NZ;
+
+	size_t _NX_total;	// dimension of the total data brick
+	size_t _NY_total;
+	size_t _NZ_total;
+	size_t _startX;		// Index range of current cube
+	size_t _endX;
+	size_t _startY;
+	size_t _endY;
+	size_t _startZ;
+	size_t _endZ;
 
     MatWaveWavedec* _mw;
     size_t _nlevels;
