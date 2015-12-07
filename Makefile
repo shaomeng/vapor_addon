@@ -1,6 +1,6 @@
 CC=gcc
 CXX=g++
-CXXFLAGS=-O2 -c -std=c++0x -Wall -DMODELS -fPIC -m64 -g
+CXXFLAGS=-O2 -std=c++0x -Wall -DMODELS -fPIC -m64 -g
 LDFLAGS=-m64
 
 ARCH=$(shell uname)
@@ -29,7 +29,8 @@ john_time_comp: john_time_comp.cpp
 	$(CXX) bin/john_time_comp.o -o bin/john_time_comp $(LDFLAGS) -L${VAPOR_BIN} -L$(VAPOR_LIB) -lwasp -lcommon 
 
 cube3d.o: cube3d.cpp cube3d.h
-	$(CXX) cube3d.cpp -o bin/cube3d.o $(CXXFLAGS) -I${VAPOR_INC} -I. 
+#	$(CXX) cube3d.cpp -o bin/cube3d.o $(CXXFLAGS) -I${VAPOR_INC} -I. 
+	$(CXX) cube3d.cpp -o bin/cube3d $(CXXFLAGS) $(LDFLAGS) -I${VAPOR_INC} -L${VAPOR_BIN} -L$(VAPOR_LIB) -lwasp -lcommon -I.
 
 slicegroup.o: slicegroup.cpp slicegroup.h
 	$(CXX) slicegroup.cpp  -o bin/slicegroup.o $(CXXFLAGS) -I${VAPOR_INC}  -I.

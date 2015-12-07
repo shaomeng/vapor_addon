@@ -107,11 +107,12 @@ Cube3D::ReadFileChunck( float* buf )
 		for( size_t k = _startZ; k < _endZ; k++ )
 			for( size_t j = _startY; j < _endY; j++ )
 			{
-				size_t offset = k * _NX_total * _NY_total + j * _NX_total;
-				fseek( f, offset, SEEK_SET );
+				size_t offset = k*_NX_total*_NY_total + j*_NX_total + _startX;
+				int rt = fseek( f, sizeof(float)*offset, SEEK_SET );
+				assert ( rt == 0 );
 				size_t rsize = fread( tmp, sizeof(float), _NX, f );
 				assert( rsize == _NX );
-				memcpy( (void*)(buf + sizeof(float) * _NX * counter), (void*)tmp, 
+				memcpy( (void*)(buf + _NX * counter), (void*)tmp, 
 						sizeof(float) * _NX );
 				counter++;
 			}
@@ -255,8 +256,50 @@ Cube3D::FindCoeffThreshold( int ratio )
 void
 Cube3D::Print10Elements()
 {
-    cerr << "here are the first 10 elements: " << endl;
-    for( int i = 0; i < 10; i++ )
-        cerr << "\t" << _C[i] << endl;
-}
+//    cerr << "here are the first 10 elements: " << endl;
+//    for( int i = 0; i < 10; i++ )
+//        cerr << "\t" << _C[i] << endl;
 
+	for( int k = _startZ; k < _startZ + 5; k++ )
+		for( int j = _startY+5; j < _startY+10; j++ )
+			for( int i = _startX + 10; i < _startX + 15; i++ )
+			{
+				printf("V\(%d, %d, %d\) should be %d, ", i, j, k, i+j+k);
+//				cout << "This value should be: " << i+j+k << endl;
+				int idx = _NX*_NY*(k-_startZ) + _NY*(j-_startY) + (i-_startX);
+				cout << "It actually is: " << _C[ idx ] << endl;
+			}
+}
+	
+
+
+int main( int argc, char* argv[] )
+{
+	string filename = argv[1];
+
+	int NX = 64;
+	int NY = 64;
+	int NZ = 64;
+
+	int NX_total = 128;
+	int NY_total = 128;
+	int NZ_total = 128;
+
+	int startX = 64;
+	int endX   = 128;
+	int startY = 0;
+	int endY   = 64;
+	int startZ = 64;
+	int endZ   = 128;
+
+	Cube3D* slice = new Cube3D( filename, "bior4.4", NX, NY, NZ, 
+								NX_total, NY_total, NZ_total,
+								startX, endX, startY, endY, startZ, endZ );
+
+	slice->Print10Elements();
+
+
+	delete slice;
+
+
+}
