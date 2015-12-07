@@ -256,23 +256,23 @@ Cube3D::FindCoeffThreshold( int ratio )
 void
 Cube3D::Print10Elements()
 {
-//    cerr << "here are the first 10 elements: " << endl;
-//    for( int i = 0; i < 10; i++ )
-//        cerr << "\t" << _C[i] << endl;
-
+    cerr << "here are the first 10 elements: " << endl;
+    for( int i = 0; i < 10; i++ )
+        cerr << "\t" << _C[i] << endl;
+/*
 	for( int k = _startZ; k < _startZ + 5; k++ )
 		for( int j = _startY+5; j < _startY+10; j++ )
 			for( int i = _startX + 10; i < _startX + 15; i++ )
 			{
 				printf("V\(%d, %d, %d\) should be %d, ", i, j, k, i+j+k);
-//				cout << "This value should be: " << i+j+k << endl;
 				int idx = _NX*_NY*(k-_startZ) + _NY*(j-_startY) + (i-_startX);
 				cout << "It actually is: " << _C[ idx ] << endl;
 			}
+*/
 }
 	
 
-
+/*
 int main( int argc, char* argv[] )
 {
 	string filename = argv[1];
@@ -301,5 +301,5 @@ int main( int argc, char* argv[] )
 
 	delete slice;
 
-
 }
+*/
