@@ -1,6 +1,5 @@
 #include "cube3d.h"
 
-using namespace VAPoR;
 using std::vector;
 using std::string;
 using std::cerr;
@@ -21,7 +20,7 @@ Cube3D::Cube3D( string filename, string wavename,
 	_NX_total = _NY_total = _NZ_total = 0;
 	_startX = _endX = _startY = _endY = _startZ = _endZ = 0;
     
-    _mw = new MatWaveWavedec( wavename );
+    _mw = new VAPoR::MatWaveWavedec( wavename );
     _nlevels = min( min(_mw->wmaxlev(NX), _mw->wmaxlev(NY)), _mw->wmaxlev(NZ));
     _clen = _mw->coefflength3( NX, NY, NZ, _nlevels );
     assert( _clen == NX * NY * NZ );
@@ -54,7 +53,7 @@ Cube3D::Cube3D( string filename, string wavename,
 	_startZ = startZ;
 	_endZ   = endZ;
 	
-    _mw = new MatWaveWavedec( wavename );
+    _mw = new VAPoR::MatWaveWavedec( wavename );
     _nlevels = min( min(_mw->wmaxlev(NX), _mw->wmaxlev(NY)), _mw->wmaxlev(NZ));
     _clen = _mw->coefflength3( NX, NY, NZ, _nlevels );
     assert( _clen == NX * NY * NZ );

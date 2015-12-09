@@ -15,7 +15,6 @@
 #define NZ 128
 #define NSLICES 19
 
-using namespace VAPoR;
 
 double FindMax( const double* arr, size_t len ) {
     double max = 0;

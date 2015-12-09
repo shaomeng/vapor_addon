@@ -10,12 +10,10 @@
 #include "cube3d.h"
 #include "slicegroup.h"
 
-#define NX 128 
-#define NY 128
-#define NZ 128
-#define NSLICES 10
-
-using namespace VAPoR;
+#define NX 64 
+#define NY 64
+#define NZ 64
+#define NSLICES 20
 
 double FindMax( const double* arr, size_t len ) {
     double max = 0;
@@ -59,13 +57,14 @@ int main( int argc, char* argv[] )
      * Initialize filenames.
      */
     char namebuf[64];
-    string prefix = "/home/samuel/Datasets/Ghost/500/" + varname + ".";
+    //string prefix = "/home/samuel/Datasets/Ghost/500/" + varname + ".";
+	string prefix = "/home/users/samuelli/Git/utilities/small_test_datasets/plume_64/" + varname + ".";
     for( int i = 0; i < NSLICES; i++ )
     {
-        sprintf( namebuf, "%04d.float", i + startIdx );
+        sprintf( namebuf, "%d.float", i + startIdx );
         filenames[i] = prefix + namebuf;
-        if( i == 0 )            printf( "Start sample idx = %s\n", namebuf );
-        if( i == NSLICES-1 )    printf( " End  sample idx = %s\n", namebuf );
+        if( i == 0 )            printf( "Start sample idx = %d\n", i + startIdx );
+        if( i == NSLICES-1 )    printf( "End  sample idx = %d\n", i + startIdx );
     }
 
     Cube3D** slices = new Cube3D*[ NSLICES ];

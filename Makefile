@@ -38,8 +38,6 @@ slicegroup.o: slicegroup.cpp slicegroup.h
 temporal: temporal.cpp bin/cube3d.o bin/slicegroup.o
 	$(CXX) temporal.cpp -o bin/temporal.o $(CXXFLAGS) -I${VAPOR_INC} -I. 
 	$(CXX) bin/temporal.o bin/cube3d.o bin/slicegroup.o -o bin/temporal $(LDFLAGS) -L${VAPOR_BIN} -L$(VAPOR_LIB) -lwasp -lcommon 
-#	g++ -o bin/temporal.o -c -std=c++0x -DLINUX -Wall -Wno-sign-compare  -D__USE_LARGEFILE64 -pthread -fPIC -m64 -g -I${VAPOR_INC} -I. -DMODELS temporal.cpp
-#	g++ bin/temporal.o bin/cube3d.o bin/slicegroup.o -o bin/temporal -m64 -lrt -pthread   -Wl,-rpath, -L${VAPOR_LIB} -lvdc -lwasp -lcommon 
 
 clean:
 	rm bin/*.o bin/john_time_comp bin/temporal

@@ -22,8 +22,6 @@
 #include <cassert>
 
 
-namespace VAPoR{
-
 class Cube3D{
 public:
     Cube3D( string filename, string wavename, 
@@ -68,7 +66,7 @@ protected:
 	size_t _startZ;
 	size_t _endZ;
 
-    MatWaveWavedec* _mw;
+    VAPoR::MatWaveWavedec* _mw;
     size_t _nlevels;
     size_t _clen;
     float* _C;
@@ -77,6 +75,5 @@ protected:
     float FindCoeffThreshold( int ratio );
 };
 
-}
 
 #endif

@@ -1,7 +1,6 @@
 /* 
  * This class, slicegroup, is forked from previous SamSliceGroup3.
  *
- *
  * It   1) stores POINTERS to the coefficient arrays of each file
  *      2) perform 1D DWT on all coefficients 
  *      3) sorts all coefficients and picks out big ones
@@ -19,8 +18,6 @@
 #include <cassert>
 #include "vapor/MatWaveWavedec.h"
 #include "cube3d.h"
-
-namespace VAPoR{
 
 class SliceGroup{
 
@@ -53,7 +50,7 @@ protected:
     size_t _nslices;
     size_t _nlevels1d;
 
-    MatWaveWavedec* _mw;
+    VAPoR::MatWaveWavedec* _mw;
 
     vector< Cube3D* > _sliceVec;
 
@@ -65,6 +62,5 @@ protected:
     float FindCoeffThreshold( int ratio );
 };
 
-}
 
 #endif

@@ -1,7 +1,5 @@
 #include "slicegroup.h"
 
-using namespace VAPoR;
-
 SliceGroup::SliceGroup(string wavename )
 {
     _wavename = wavename;
@@ -9,7 +7,7 @@ SliceGroup::SliceGroup(string wavename )
     _nlevels1d = 0;
     _sliceLen = 0;
     _buf = NULL;
-    _mw = new MatWaveWavedec( _wavename );
+    _mw = new VAPoR::MatWaveWavedec( _wavename );
 //    _rms = 0.0;
 //    _lmax = 0.0;
 }
@@ -45,7 +43,7 @@ SliceGroup::Initialize( )
 void
 SliceGroup::Decompose( )
 {
-    MatWaveWavedec mv( _wavename );
+    VAPoR::MatWaveWavedec mv( _wavename );
     size_t l1d[ _nlevels1d+2 ];
 
     for( size_t i = 0; i < _sliceLen; i++ )
@@ -66,7 +64,7 @@ SliceGroup::Reconstruct( int ratio )
     float nth = FindCoeffThreshold( ratio ); // use coeffs larger than nth.
     float nnth = -1.0 * nth;
 
-    MatWaveWavedec mv( _wavename );
+    VAPoR::MatWaveWavedec mv( _wavename );
     float src[ _nslices ];
 
     for( size_t i = 0; i < _sliceLen; i++ )
