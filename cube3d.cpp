@@ -11,21 +11,19 @@ Cube3D::Cube3D( string filename, string wavename,
 {
     _filename = filename;
     _wavename = wavename;
-    _NX = NX;
-    _NY = NY;
-    _NZ = NZ;
+    _NX = _NX_total = _endX = NX;
+    _NY = _NY_total = _endY = NY;
+    _NZ = _NZ_total = _endZ = NZ;
     _L = NULL;
 
-	// these variables have no effect with this constructor 
-	_NX_total = _NY_total = _NZ_total = 0;
-	_startX = _endX = _startY = _endY = _startZ = _endZ = 0;
+	_startX = _startY = _startZ = 0;
     
     _mw = new VAPoR::MatWaveWavedec( wavename );
     _nlevels = min( min(_mw->wmaxlev(NX), _mw->wmaxlev(NY)), _mw->wmaxlev(NZ));
     _clen = _mw->coefflength3( NX, NY, NZ, _nlevels );
     assert( _clen == NX * NY * NZ );
     _C = new float[ _clen ];
-    ReadFile( _C );
+    ReadFileChunck( _C );
 }
 
 // Constructor for reading a block out of a big chunck as current cube.
@@ -62,6 +60,7 @@ Cube3D::Cube3D( string filename, string wavename,
 }
 
 // Reads the whole file into buffer
+/*
 void
 Cube3D::ReadFile( float* buf )
 {
@@ -70,8 +69,8 @@ Cube3D::ReadFile( float* buf )
         fseek( f, 0, SEEK_END );
         size_t size = ftell( f );
 
-        size_t totallen = _NX*_NY*_NZ;
-        assert (size == sizeof(float) * _NX*_NY*_NZ );
+        size_t totallen = _NX_total * _NY_total * _NZ_total;
+        assert (size == sizeof(float) * totallen );
         assert ( buf != NULL );
 
         fseek( f, 0, SEEK_SET );
@@ -87,6 +86,7 @@ Cube3D::ReadFile( float* buf )
         exit(1);
     }
 }
+*/
 
 // Reads a chunck of file specified by ranges
 void
@@ -212,7 +212,7 @@ void
 Cube3D::Evaluate( double& rms, double& lmax )
 {
     float* raw = new float[ _clen ];
-    ReadFile( raw );
+    ReadFileChunck( raw );
 
     double sum = 0.0;
     double c = 0.0;

@@ -43,11 +43,11 @@ public:
 
     void Print10Elements();
 
-    void ReloadInputFile()  { ReadFile( _C ); }
+    void ReloadInputFile()  { ReadFileChunck( _C ); }
     size_t GetCoeffLen()    { return _clen; }
 
 protected:
-    void ReadFile( float* buf );
+//    void ReadFile( float* buf );
     void ReadFileChunck( float* buf );
     string _filename;
     string _wavename;
