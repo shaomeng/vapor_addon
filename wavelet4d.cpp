@@ -1,4 +1,4 @@
-#include "Wavelet4D.h"
+#include "wavelet4d.h"
 
 using std::string;
 using std::cout;
@@ -32,11 +32,6 @@ Wavelet4D::~Wavelet4D()
 		delete[] _block_indices;
 		_block_indices = NULL;
 	}
-	/* if( _blocks ) (
-		for( size_t i = 0; i < _NT*_BLOCKNUM; i++ )
-			delete _blocks[i];
-		delete[] _blocks;
-	} */
 }
 
 void
@@ -72,6 +67,9 @@ Wavelet4D::CalcBlockIndices()
 	_block_indices = new size_t[ _BLOCKNUM * 6 ];
 	size_t counter = 0;
 
+	/*
+	 * 6 indices for a cell are stored together.
+	 */
 	for( size_t k = 0; k < z_block; k++ )
 		for( size_t j = 0; j < y_block; j++ )
 			for( size_t i = 0; i < x_block; i++ )
@@ -114,30 +112,44 @@ Wavelet4D::PrintFilenames()
 int
 Wavelet4D::ParallelExec()
 {
+	/*
+  	 * RMS and LMAX with same _BLOCKNUM but different _NT are stored together
+	 */
 	double* rms = new double[ _BLOCKNUM * _NT ];
 	double* lmax = new double[ _BLOCKNUM * _NT ];
+
+//printf("_BLOCKNUM = %ld, _NT = %ld\n", _BLOCKNUM, _NT );
 
 	#pragma omp parallel for schedule( dynamic )
 	for( size_t i = 0; i < _BLOCKNUM; i++ )
 	{
+//cerr << "i = " << i << endl;
 		Cube3D** slices = new Cube3D*[ _NT ];
 
 		for( size_t t = 0; t < _NT; t++ )
 		{
-			slices[t] = new Cube3D( _filenames[i], _wavename, 
+//cerr << "t = " << t << endl;
+			slices[t] = new Cube3D( _filenames[t], _wavename, 
 					_BLOCKDIM, _BLOCKDIM, _BLOCKDIM, _NX, _NY, _NZ,
 					_block_indices[ 6*i ],   _block_indices[ 6*i+1 ],
                     _block_indices[ 6*i+2 ], _block_indices[ 6*i+3 ],
                     _block_indices[ 6*i+4 ], _block_indices[ 6*i+5 ] );
+//cerr << "finish construction" << endl;
 			slices[t] -> Decompose();
+//cerr << "finish decompose" << endl;
 			slices[t] -> Reconstruct (_cratio);
-			slices[t] -> Evaluate( rms[ i*_BLOCKNUM + t ], lmax[ i*_BLOCKNUM + t ] );
+//cerr << "finish reconstruct" << endl;
+			slices[t] -> Evaluate( rms[ i*_NT + t ], lmax[ i*_NT + t ] );
+//cerr << "finish evaluate" << endl;
 		}							
 
 		for( size_t t = 0; t < _NT; t++ )
-			delete slices[t];
-		delete[] slices;
+			if( slices[t] ) 	delete slices[t];
+		if( slices ) 			delete[] slices;
 	}
+
+	for( size_t i = 0; i < _NT; i++ )
+		cout << "RMS, LMAX: " << rms[i + 2*_NT] << "\t" << lmax[i + 2*_NT] << endl;
 
 	delete[] rms;
 	delete[] lmax;
@@ -161,11 +173,11 @@ Wavelet4D::ParallelExec()
 
 int main()
 {
-	Wavelet4D wav( 128, 128, 128, 20 );
+	Wavelet4D wav( 128, 128, 128, 20);
 	string filepath = "/flash_buffer/Sam/HD_128";
 	wav.SetFilePath( filepath );
 	wav.SetFileStartIndex( 380 );
-	wav.PrintFilenames();
+cerr << "finish set file start index" << endl;
 	
 	wav.ParallelExec();
 

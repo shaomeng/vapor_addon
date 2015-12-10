@@ -29,9 +29,9 @@ public:
 	~Wavelet4D();
 
 	/*
-	 assume all file names start with the same prefix,
-	 and differ by an index.
-	*/
+	 * assume all file names start with the same prefix,
+	 * and differ by an index.
+	 */
 	void SetFilePath( std::string path );
 	void SetFileStartIndex( size_t idx );
 	int ParallelExec();
@@ -55,8 +55,6 @@ protected:
 	size_t* _block_indices;	// stores indices for each block at one time step
 							// 6 indices to specify a block:
 							// startX, endX, startY, endY, startZ, endZ
-//	Cube3D** _total_blocks;		// pointer to all blocks. 
-//							// Total no. of blocks: _NT * _BLOCKNUM
 
 	void CalcBlockIndices();
 };
