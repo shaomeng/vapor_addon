@@ -115,59 +115,70 @@ Wavelet4D::ParallelExec()
 	/*
   	 * RMS and LMAX with same _BLOCKNUM but different _NT are stored together
 	 */
-	double* rms = new double[ _BLOCKNUM * _NT ];
-	double* lmax = new double[ _BLOCKNUM * _NT ];
+	double* rms3d = new double[ _BLOCKNUM * _NT ];
+	double* lmax3d = new double[ _BLOCKNUM * _NT ];
+	double* rms4d = new double[ _BLOCKNUM * _NT ];
+	double* lmax4d = new double[ _BLOCKNUM * _NT ];
 
-//printf("_BLOCKNUM = %ld, _NT = %ld\n", _BLOCKNUM, _NT );
-
+	/*
+	 * Each thread takes care of one index from _BLOCKNUM.
+ 	 * which has _NT blocks.
+	 */
 	#pragma omp parallel for schedule( dynamic )
 	for( size_t i = 0; i < _BLOCKNUM; i++ )
 	{
-//cerr << "i = " << i << endl;
 		Cube3D** slices = new Cube3D*[ _NT ];
+		SliceGroup* group = new SliceGroup( _wavename );
 
 		for( size_t t = 0; t < _NT; t++ )
 		{
-//cerr << "t = " << t << endl;
 			slices[t] = new Cube3D( _filenames[t], _wavename, 
 					_BLOCKDIM, _BLOCKDIM, _BLOCKDIM, _NX, _NY, _NZ,
 					_block_indices[ 6*i ],   _block_indices[ 6*i+1 ],
                     _block_indices[ 6*i+2 ], _block_indices[ 6*i+3 ],
                     _block_indices[ 6*i+4 ], _block_indices[ 6*i+5 ] );
-//cerr << "finish construction" << endl;
 			slices[t] -> Decompose();
-//cerr << "finish decompose" << endl;
-			slices[t] -> Reconstruct (_cratio);
-//cerr << "finish reconstruct" << endl;
-			slices[t] -> Evaluate( rms[ i*_NT + t ], lmax[ i*_NT + t ] );
-//cerr << "finish evaluate" << endl;
-		}							
 
+			/*
+			 * individual slice reconstruction and evaluation
+			 *
+			slices[t] -> Reconstruct (_cratio);
+			slices[t] -> Evaluate( rms3d[ i*_NT + t ], lmax3d[ i*_NT + t ] );
+			slices[t] -> ReloadInputFile();
+			slices[t] -> Decompose();
+			*/
+
+			group -> AddSlice( slices[t] );
+		}							
+		/*
+		 * Temporal compression
+		 */
+		group -> Initialize();
+		group -> Decompose();
+		group -> Reconstruct( _cratio );
+		group -> UpdateSlices();
+		for( size_t t = 0; t < _NT; t++ ) {
+			slices[t] -> Reconstruct(1);
+			slices[t] -> Evaluate( rms4d[ i*_NT + t ], lmax4d[ i*_NT + t ] );
+		}
+
+		if( group )				delete group;
 		for( size_t t = 0; t < _NT; t++ )
 			if( slices[t] ) 	delete slices[t];
 		if( slices ) 			delete[] slices;
 	}
 
+	// Prints out RMS and LMAX of a certain index in _BLOCKNUM
 	for( size_t i = 0; i < _NT; i++ )
-		cout << "RMS, LMAX: " << rms[i + 2*_NT] << "\t" << lmax[i + 2*_NT] << endl;
+		cout << "RMS, LMAX: " << rms4d[i + 2*_NT] << "\t" << lmax4d[i + 2*_NT] << endl;
 
-	delete[] rms;
-	delete[] lmax;
+	delete[] rms3d;
+	delete[] lmax3d;
+	delete[] rms4d;
+	delete[] lmax4d;
 
 	return 0;
 
-/*
-	size_t hw_concurrency = std::thread::hardware_concurrency();
-	omp_set_dynamic(0);		// disables dynamic thread adjustment
-	#pragma omp parallel num_threads( nthreads )
-	{
-		int my_tid = omp_get_thread_num();		// 0 to (nthreads - 1)
-		printf("Hello World from thread = %d\n", tid);
-		if (tid == 0) {
-    		printf("Number of threads = %d\n", omp_get_num_threads());
-    	} 
-	}
-*/
 }
 
 
