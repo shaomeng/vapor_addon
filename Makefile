@@ -39,8 +39,8 @@ temporal: temporal.cpp bin/cube3d.o bin/slicegroup.o
 	$(CXX) temporal.cpp -o bin/temporal.o $(CXXFLAGS) -I${VAPOR_INC} -I. 
 	$(CXX) bin/temporal.o bin/cube3d.o bin/slicegroup.o -o bin/temporal $(LDFLAGS) -L${VAPOR_BIN} -L$(VAPOR_LIB) -lwasp -lcommon 
 
-wavelet4d: Wavelet4D.h Wavelet4D.cpp
-	$(CXX) Wavelet4D.cpp -o bin/wavelet4d.o $(CXXFLAGS) -I. -I${VAPOR_INC} -fopenmp
+wavelet4d: wavelet4d.h wavelet4d.cpp
+	$(CXX) wavelet4d.cpp -o bin/wavelet4d.o $(CXXFLAGS) -I. -I${VAPOR_INC} -fopenmp
 	$(CXX) bin/wavelet4d.o bin/cube3d.o -o bin/wavelet4d $(LDFLAGS) -L$(VAPOR_BIN) -L$(VAPOR_LIB) -lwasp -lcommon -fopenmp
 
 clean:
