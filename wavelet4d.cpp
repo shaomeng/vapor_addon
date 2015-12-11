@@ -41,13 +41,13 @@ Wavelet4D::SetFilePath( string path )
 }
 
 void
-Wavelet4D::SetFileStartIndex( size_t idx )
+Wavelet4D::SetFileStartIndex( int idx )
 {
 	_filenames = new string[ _NT ];
 	char buf[256];
 
-	for( size_t i = 0; i < _NT; i++ ) {
-		sprintf( buf, "/vx.%04lu.out", i + idx );
+	for( unsigned int i = 0; i < _NT; i++ ) {
+		sprintf( buf, "/vx.%04d.out", i + idx );
 		_filenames[i] = _filepath + buf;
 	}	
 }
@@ -112,6 +112,7 @@ Wavelet4D::PrintFilenames()
 int
 Wavelet4D::ParallelExec()
 {
+#ifdef EVALUATE
 	/*
   	 * RMS and LMAX with same _BLOCKNUM but different _NT are stored together
 	 */
@@ -119,6 +120,7 @@ Wavelet4D::ParallelExec()
 	double* lmax3d = new double[ _BLOCKNUM * _NT ];
 	double* rms4d = new double[ _BLOCKNUM * _NT ];
 	double* lmax4d = new double[ _BLOCKNUM * _NT ];
+#endif
 
 	/*
 	 * Each thread takes care of one index from _BLOCKNUM.
@@ -139,27 +141,36 @@ Wavelet4D::ParallelExec()
                     _block_indices[ 6*i+4 ], _block_indices[ 6*i+5 ] );
 			slices[t] -> Decompose();
 
+#ifdef EVALUATE
 			/*
 			 * individual slice reconstruction and evaluation
-			 *
+			 */
 			slices[t] -> Reconstruct (_cratio);
 			slices[t] -> Evaluate( rms3d[ i*_NT + t ], lmax3d[ i*_NT + t ] );
 			slices[t] -> ReloadInputFile();
 			slices[t] -> Decompose();
-			*/
-
+#endif
 			group -> AddSlice( slices[t] );
 		}							
 		/*
 		 * Temporal compression
 		 */
 		group -> Initialize();
-		group -> Decompose();
+		group -> Decompose();		// All coefficients stored now!
+
+		/*
+		 * Filename for output coefficients
+ 		 */
+		string coeff_name = _filenames[0] + to_string(i) + ".coeff";
+		group -> OutputFile( coeff_name, _cratio );
+
+#ifdef EVALUATE
 		group -> Reconstruct( _cratio );
 		group -> UpdateSlices();
 		for( size_t t = 0; t < _NT; t++ ) {
 			slices[t] -> Reconstruct(1);
 			slices[t] -> Evaluate( rms4d[ i*_NT + t ], lmax4d[ i*_NT + t ] );
+#endif
 		}
 
 		if( group )				delete group;
@@ -168,19 +179,45 @@ Wavelet4D::ParallelExec()
 		if( slices ) 			delete[] slices;
 	}
 
-	// Prints out RMS and LMAX of a certain index in _BLOCKNUM
-	for( size_t i = 0; i < _NT; i++ )
-		cout << "RMS, LMAX: " << rms4d[i + 2*_NT] << "\t" << lmax4d[i + 2*_NT] << endl;
-
+#ifdef EVALUATE
+	printf("3D DWT RMS = %e, LMAX = %e\n", FindRMS( rms3d, _BLOCKNUM * _NT ),
+										   FindMax( lmax3d, _BLOCKNUM * _NT));
+	printf("4D DWT RMS = %e, LMAX = %e\n", FindRMS( rms4d, _BLOCKNUM * _NT ),
+										   FindMax( lmax4d, _BLOCKNUM * _NT));
 	delete[] rms3d;
 	delete[] lmax3d;
 	delete[] rms4d;
 	delete[] lmax4d;
+#endif
 
 	return 0;
 
 }
 
+double 
+Wavelet4D::FindMax( const double* arr, size_t len ) {
+    double max = 0;
+    for( size_t i = 0; i < len; i++ )
+        if( arr[i] > max )
+            max = arr[i];
+    return max;
+}
+
+double 
+Wavelet4D::FindRMS( const double* arr, size_t len)
+{
+    double sum = 0.0;
+    double c = 0.0;
+    for( size_t i = 0; i < len; i++ ) {
+        double y = arr[i] * arr[i] - c;
+        double t = sum + y;
+        c = (t - sum) - y;
+        sum = t;
+    }
+    sum /= double(len);
+    sum = sqrt( sum );
+    return sum;
+}
 
 int main()
 {
@@ -188,7 +225,6 @@ int main()
 	string filepath = "/flash_buffer/Sam/HD_128";
 	wav.SetFilePath( filepath );
 	wav.SetFileStartIndex( 380 );
-cerr << "finish set file start index" << endl;
 	
 	wav.ParallelExec();
 

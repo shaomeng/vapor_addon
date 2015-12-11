@@ -33,12 +33,13 @@ public:
 	 * and differ by an index.
 	 */
 	void SetFilePath( std::string path );
-	void SetFileStartIndex( size_t idx );
+	void SetFileStartIndex( int idx );
 	int ParallelExec();
 
 	void PrintBlockIndices();
 	void PrintFilenames();
-
+	double FindMax( const double* arr, size_t len );
+	double FindRMS( const double* arr, size_t len);
 
 
 protected:

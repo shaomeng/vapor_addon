@@ -57,11 +57,11 @@ int main( int argc, char* argv[] )
      * Initialize filenames.
      */
     char namebuf[64];
-    //string prefix = "/home/samuel/Datasets/Ghost/500/" + varname + ".";
-	string prefix = "/home/users/samuelli/Git/utilities/small_test_datasets/plume_64/" + varname + ".";
+    string prefix = "/flash_buffer/Sam/HD_128/" + varname + ".";
+	//string prefix = "/home/users/samuelli/Git/utilities/small_test_datasets/plume_64/" + varname + ".";
     for( int i = 0; i < NSLICES; i++ )
     {
-        sprintf( namebuf, "%d.float", i + startIdx );
+        sprintf( namebuf, "%04d.out", i + startIdx );
         filenames[i] = prefix + namebuf;
         if( i == 0 )            printf( "Start sample idx = %d\n", i + startIdx );
         if( i == NSLICES-1 )    printf( "End  sample idx = %d\n", i + startIdx );
@@ -69,7 +69,10 @@ int main( int argc, char* argv[] )
 
     Cube3D** slices = new Cube3D*[ NSLICES ];
     for( int i = 0; i < NSLICES; i++ ) {
-        slices[i] = new Cube3D( filenames[i], wavenameXYZ, NX, NY, NZ );
+//        slices[i] = new Cube3D( filenames[i], wavenameXYZ, NX, NY, NZ );
+        slices[i] = new Cube3D( filenames[i], wavenameXYZ, NX, NY, NZ,
+								128, 128, 128,
+								0, 64, 64, 128, 0, 64 );
     }
 
 
@@ -88,6 +91,12 @@ int main( int argc, char* argv[] )
     double rms = CalcRMS( rmsArr, NSLICES );
     cout  << "==> 3D compression at ratio " << ratio << endl;
     cout  << "\tRMS, MAX:  " << rms << ", " << lmax << endl;
+
+	/*
+	 * individual errors
+  	 */
+	for( int i = 0; i < NSLICES; i++ )
+		cout << "RMS, LMAX: " << rmsArr[i] << "\t" << lmaxArr[i] << endl;
 
 
     /*
@@ -118,6 +127,12 @@ int main( int argc, char* argv[] )
     rms = CalcRMS( rmsArr, NSLICES );
     cout  << "==> 3D+1D compression at ratio " << ratio << endl;
     cout  << "\tRMS, MAX:  " << rms << ", " << lmax << endl;
+
+	/*
+	 * individual errors
+  	 */
+	for( int i = 0; i < NSLICES; i++ )
+		cout << "RMS, LMAX: " << rmsArr[i] << "\t" << lmaxArr[i] << endl;
         
     
     for( int i = 0; i < NSLICES; i++ )

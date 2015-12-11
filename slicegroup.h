@@ -32,17 +32,10 @@ public:
 
     void Reconstruct( int ratio );
 
-    
     void UpdateSlices( );   // Get the ith coeff array. This is for the ith file.
 
-    /*
-     * The evaluation of overall RMS and LMAX goes into the main function.
-     *
-     *
-    void Evaluate();
-    double GetRMS(){  return _rms; }
-    double GetLMAX(){ return _lmax; }
-     */
+	int OutputFile( const string& filename, int ratio ); 
+
 
 protected:
     string _wavename;
@@ -56,8 +49,6 @@ protected:
 
     float* _buf;            // huge array that stores all the intermediate numbers 
 
-//    double _rms;
-//    double _lmax;
 
     float FindCoeffThreshold( int ratio );
 };

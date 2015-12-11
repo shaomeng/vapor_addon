@@ -8,8 +8,6 @@ SliceGroup::SliceGroup(string wavename )
     _sliceLen = 0;
     _buf = NULL;
     _mw = new VAPoR::MatWaveWavedec( _wavename );
-//    _rms = 0.0;
-//    _lmax = 0.0;
 }
 
 SliceGroup::~SliceGroup()
@@ -66,19 +64,51 @@ SliceGroup::Reconstruct( int ratio )
 
     VAPoR::MatWaveWavedec mv( _wavename );
     float src[ _nslices ];
+	float c, rc;
 
     for( size_t i = 0; i < _sliceLen; i++ )
     {
         for( size_t j = 0; j < _nslices; j++ )
         {
-            float c = _buf[ i*_nslices + j ];
+            c = _buf[ i*_nslices + j ];
             if( c < nth && c > nnth )   src[j] = 0.0;
             else                        src[j] = c;
         }
         float* dst = _buf + i*_nslices;
-        int rc = mv.waverec( src, L1d, _nlevels1d, dst );
+        rc = mv.waverec( src, L1d, _nlevels1d, dst );
         assert (rc >= 0 );
     }
+}
+
+int
+SliceGroup::OutputFile( const string& filename, int ratio )
+{
+	float nth = FindCoeffThreshold( ratio ); // use coeffs larger than nth.
+    float nnth = -1.0 * nth;
+	size_t nCoeffs = _nslices * _sliceLen;
+	size_t nCoeffWrite = nCoeffs / ratio;	// It's OK if not divisible
+	float* coeff = new float[ nCoeffWrite ];
+	size_t counter = 0;
+
+	for( size_t i = 0; i < nCoeffs; i++ ) {
+		if( _buf[i] > nth || _buf[i] < nnth )	
+			coeff[ counter++ ] = _buf[i];
+	}
+
+	FILE* f = fopen( filename.c_str(), "wb" );
+	if( f != NULL )
+	{
+		size_t rt = fwrite ( coeff, sizeof(float), nCoeffWrite, f );
+		assert( rt == nCoeffWrite );
+		fclose(f);
+		delete[] coeff;
+	}
+	else{
+        cerr << "file open error: " << filename << endl;
+		delete[] coeff;
+        exit(1);
+    }
+	return 0;
 }
 
 void
@@ -101,10 +131,10 @@ SliceGroup::FindCoeffThreshold( int ratio )
         return 0.0;
 
     size_t nCoeffs = _nslices * _sliceLen;
-    size_t n = nCoeffs / ratio - 1; // the nth largest, indexing from 1.
+    //size_t n = nCoeffs / ratio - 1; 	// the nth largest. -1 because index from zero.
+    size_t n = nCoeffs / ratio; 		// the nth largest. 
 
     vector<float> allCoeffs( nCoeffs, 0.0 );
-//    #pragma omp parallel for
     for( size_t i = 0; i < nCoeffs; i++ )
             if ( _buf[i] > 0 )
                 allCoeffs[i] = ( -1.0 * _buf[i] ); 
