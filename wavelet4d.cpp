@@ -161,7 +161,7 @@ Wavelet4D::ParallelExec()
 		/*
 		 * Filename for output coefficients
  		 */
-		string coeff_name = _filenames[0] + to_string(i) + ".coeff";
+		string coeff_name = _filenames[0] + "." + to_string(i) + ".coeff";
 		group -> OutputFile( coeff_name, _cratio );
 
 #ifdef EVALUATE
