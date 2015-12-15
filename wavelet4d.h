@@ -16,7 +16,7 @@
 #include <cassert>
 #include <string>
 #include <thread>
-//#include <omp.h>
+#include <omp.h>
 
 #include "cube3d.h"
 #include "slicegroup.h"
@@ -33,7 +33,7 @@ public:
 	 * and differ by an index.
 	 */
 	void SetFilePath( std::string path );
-	void SetFileStartIndex( int idx );
+	void GenerateFilenames( int idx, std::string var );
 	int ParallelExec();
 
 	void PrintBlockIndices();

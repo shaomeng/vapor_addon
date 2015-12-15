@@ -41,14 +41,18 @@ Wavelet4D::SetFilePath( string path )
 }
 
 void
-Wavelet4D::SetFileStartIndex( int idx )
+Wavelet4D::GenerateFilenames( int idx,  string var)
 {
 	_filenames = new string[ _NT ];
 	char buf[256];
 
 	for( unsigned int i = 0; i < _NT; i++ ) {
-		sprintf( buf, "/vx.%04d.out", i + idx );
-		_filenames[i] = _filepath + buf;
+		/* for Lulesh 
+		sprintf( buf, ".%04d.float", i + idx );
+		*/
+		/* for GHOST */
+		sprintf( buf, ".%04d.out", i+idx);
+		_filenames[i] = _filepath + var + buf;
 	}	
 }
 
@@ -170,8 +174,8 @@ Wavelet4D::ParallelExec()
 		for( size_t t = 0; t < _NT; t++ ) {
 			slices[t] -> Reconstruct(1);
 			slices[t] -> Evaluate( rms4d[ i*_NT + t ], lmax4d[ i*_NT + t ] );
-#endif
 		}
+#endif
 
 		if( group )				delete group;
 		for( size_t t = 0; t < _NT; t++ )
@@ -219,13 +223,15 @@ Wavelet4D::FindRMS( const double* arr, size_t len)
     return sum;
 }
 
+/*
 int main()
 {
 	Wavelet4D wav( 128, 128, 128, 20);
-	string filepath = "/flash_buffer/Sam/HD_128";
+	string filepath = "/flash_buffer/Sam/HD_128/";
 	wav.SetFilePath( filepath );
-	wav.SetFileStartIndex( 380 );
+	wav.GenerateFilenames( 380, "vx" );
 	
 	wav.ParallelExec();
 
 }
+*/
