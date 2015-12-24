@@ -12,12 +12,22 @@ LDFLAGS+=-lrt -pthread -Wl,-rpath,$(VAPOR_INSTALL)/bin -Wl,-rpath,$(VAPOR_INSTAL
 endif
 
 ifeq ($(ARCH), Darwin)
-CC=clang
-CXX=clang++
+CC=gcc-5
+CXX=g++-5
 VAPOR_INSTALL=/Users/samuel/Tools/vapor-git/install
-CXXFLAGS+=-DDARWIN -DDarwin -stdlib=libc++
-LDFLAGS+=-stdlib=libc++ -headerpad_max_install_names  -framework CoreFoundation
+CXXFLAGS+=-DDARWIN -DDarwin
+LDFLAGS+=-headerpad_max_install_names  -framework CoreFoundation
 endif
+
+
+#ifeq ($(ARCH), Darwin)
+#CC=clang
+#CXX=clang++
+#VAPOR_INSTALL=/Users/samuel/Tools/vapor-git/install
+#CXXFLAGS+=-DDARWIN -DDarwin -stdlib=libc++
+#LDFLAGS+=-stdlib=libc++ -headerpad_max_install_names  -framework CoreFoundation
+#endif
+
 
 
 VAPOR_INC=${VAPOR_INSTALL}/include
@@ -39,12 +49,13 @@ temporal: temporal.cpp bin/cube3d.o bin/slicegroup.o
 	$(CXX) temporal.cpp -o bin/temporal.o $(CXXFLAGS) -I${VAPOR_INC} -I. 
 	$(CXX) bin/temporal.o bin/cube3d.o bin/slicegroup.o -o bin/temporal $(LDFLAGS) -L${VAPOR_BIN} -L$(VAPOR_LIB) -lwasp -lcommon 
 
-wavelet4d.o: wavelet4d.h wavelet4d.cpp bin/slicegroup.o
+wavelet4d.o: wavelet4d.h wavelet4d.cpp
 	$(CXX) wavelet4d.cpp -o bin/wavelet4d.o $(CXXFLAGS) -I. -I${VAPOR_INC} -fopenmp 
 #	$(CXX) bin/wavelet4d.o bin/cube3d.o bin/slicegroup.o -o bin/wavelet4d $(LDFLAGS) -L$(VAPOR_BIN) -L$(VAPOR_LIB) -lwasp -lcommon -fopenmp 
 
 wavelet4d.a: bin/wavelet4d.o bin/cube3d.o bin/slicegroup.o
-	ar rvs -o bin/libwavelet4d.a bin/cube3d.o bin/slicegroup.o bin/wavelet4d.o
+	ar -rsv bin/libwavelet4d.a bin/cube3d.o bin/slicegroup.o bin/wavelet4d.o
+	#ar rsv -o bin/libwavelet4d.a bin/cube3d.o bin/slicegroup.o bin/wavelet4d.o
 
 
 
