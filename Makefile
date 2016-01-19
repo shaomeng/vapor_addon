@@ -53,7 +53,7 @@ wavelet4d.o: wavelet4d.h wavelet4d.cpp
 	$(CXX) wavelet4d.cpp -o bin/wavelet4d.o $(CXXFLAGS) -I. -I${VAPOR_INC} -fopenmp 
 #	$(CXX) bin/wavelet4d.o bin/cube3d.o bin/slicegroup.o -o bin/wavelet4d $(LDFLAGS) -L$(VAPOR_BIN) -L$(VAPOR_LIB) -lwasp -lcommon -fopenmp 
 
-wavelet4d.a: bin/wavelet4d.o bin/cube3d.o bin/slicegroup.o
+libwavelet4d.a: bin/wavelet4d.o bin/cube3d.o bin/slicegroup.o
 	ar -rsv bin/libwavelet4d.a bin/cube3d.o bin/slicegroup.o bin/wavelet4d.o
 	#ar rsv -o bin/libwavelet4d.a bin/cube3d.o bin/slicegroup.o bin/wavelet4d.o
 
