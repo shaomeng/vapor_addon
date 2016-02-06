@@ -6,7 +6,7 @@ LDFLAGS=-m64
 ARCH=$(shell uname)
 
 ifeq ($(ARCH), Linux)
-VAPOR_INSTALL=/home/users/samuelli/Tools/vapor-git/install
+VAPOR_INSTALL=/home/users/samuelli/Tools/vapor-git/Install
 CXXFLAGS+=-DLINUX -D__USE_LARGEFILE64 -D__USE_LARGEFILE64 -pthread -DLinux
 LDFLAGS+=-lrt -pthread -Wl,-rpath,$(VAPOR_INSTALL)/bin -Wl,-rpath,$(VAPOR_INSTALL)/lib
 endif

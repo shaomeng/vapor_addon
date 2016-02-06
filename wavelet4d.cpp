@@ -17,17 +17,12 @@ Wavelet4D::Wavelet4D( size_t NX, size_t NY, size_t NZ, size_t NT )
 	_NZ = NZ;
 	_NT = NT;
 
-	_filenames = NULL;
 	_block_indices = NULL;
 	CalcBlockIndices();
 }
 
 Wavelet4D::~Wavelet4D()
 {
-	if( _filenames ) {
-		delete[] _filenames;
-		_filenames = NULL;
-	}
 	if( _block_indices ) {
 		delete[] _block_indices;
 		_block_indices = NULL;
@@ -35,24 +30,15 @@ Wavelet4D::~Wavelet4D()
 }
 
 void
-Wavelet4D::SetFilePath( string path )
+Wavelet4D::GenerateFilenames( const string &path, int idx,  const string &var)
 {
-	_filepath= path;
-}
-
-void
-Wavelet4D::GenerateFilenames( int idx,  string var)
-{
-	_filenames = new string[ _NT ];
 	char buf[256];
+	_filenames.clear();
 
 	for( unsigned int i = 0; i < _NT; i++ ) {
-		/* for Lulesh 
-		sprintf( buf, ".%04d.float", i + idx );
-		*/
-		/* for GHOST */
 		sprintf( buf, ".%04d.out", i+idx);
-		_filenames[i] = _filepath + var + buf;
+		string name = path + var + buf;
+		_filenames.push_back(name);
 	}	
 }
 
@@ -104,11 +90,8 @@ Wavelet4D::PrintBlockIndices()
 void
 Wavelet4D::PrintFilenames()
 {
-	if( _filenames == NULL )
-		cerr << "_filenames == NULL " << endl;
-	else
-		for( size_t i = 0; i < _NT; i++ )
-			cerr << _filenames[i] << endl;
+	for( unsigned int i = 0; i < _filenames.size(); i++ )
+		cout << _filenames[i] << endl;
 }
 
 

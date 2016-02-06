@@ -15,7 +15,7 @@
 #include <cstdio>
 #include <cassert>
 #include <string>
-#include <thread>
+#include <vector>
 #include <omp.h>
 
 #include "cube3d.h"
@@ -32,8 +32,7 @@ public:
 	 * assume all file names start with the same prefix,
 	 * and differ by an index.
 	 */
-	void SetFilePath( std::string path );
-	void GenerateFilenames( int idx, std::string var );
+	void GenerateFilenames( const std::string &path, int startIdx, const std::string &var );
 	int ParallelExec();
 
 	void PrintBlockIndices();
@@ -49,9 +48,8 @@ protected:
 	size_t _BLOCKNUM;		// total number of blocks in one time step
 	int    _cratio;			// compression ratio
 	
-	std::string* _filenames;
+	std::vector<std::string> _filenames;
 	std::string  _wavename;
-	std::string  _filepath;
 
 	size_t* _block_indices;	// stores indices for each block at one time step
 							// 6 indices to specify a block:
