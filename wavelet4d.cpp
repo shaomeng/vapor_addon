@@ -1,5 +1,7 @@
 #include "wavelet4d.h"
 
+#define EVALUATE
+
 using std::string;
 using std::cout;
 using std::cerr;
@@ -10,7 +12,7 @@ Wavelet4D::Wavelet4D( size_t NX, size_t NY, size_t NZ, size_t NT )
 
 	_BLOCKDIM = 64;
 	_wavename = "bior4.4";
-	_cratio = 8;
+	_cratio = 1;
 
 	_NX = NX;
 	_NY = NY;
@@ -30,14 +32,14 @@ Wavelet4D::~Wavelet4D()
 }
 
 void
-Wavelet4D::GenerateFilenames( const string &path, int idx,  const string &var)
+Wavelet4D::GenerateFilenames( const string &path, int idx)
 {
 	char buf[256];
 	_filenames.clear();
 
 	for( unsigned int i = 0; i < _NT; i++ ) {
-		sprintf( buf, ".%04d.out", i+idx);
-		string name = path + var + buf;
+		sprintf( buf, ".%04d", i+idx);
+		string name = path + buf;
 		_filenames.push_back(name);
 	}	
 }
@@ -101,7 +103,7 @@ Wavelet4D::ParallelExec()
 {
 #ifdef EVALUATE
 	/*
-  	 * RMS and LMAX with same _BLOCKNUM but different _NT are stored together
+  	 * RMS and LMAX with same block index but different _NT are stored together
 	 */
 	double* rms3d = new double[ _BLOCKNUM * _NT ];
 	double* lmax3d = new double[ _BLOCKNUM * _NT ];
@@ -111,8 +113,10 @@ Wavelet4D::ParallelExec()
 
 	/*
 	 * Each thread takes care of one index from _BLOCKNUM.
- 	 * which has _NT blocks.
 	 */
+	int nthreadSys = omp_get_num_threads();
+	int nthreads = (nthreadSys < _BLOCKNUM)? nthreadSys : _BLOCKNUM;
+	omp_set_num_threads( nthreads );
 	#pragma omp parallel for schedule( dynamic )
 	for( size_t i = 0; i < _BLOCKNUM; i++ )
 	{
@@ -148,7 +152,7 @@ Wavelet4D::ParallelExec()
 		/*
 		 * Filename for output coefficients
  		 */
-		string coeff_name = _filenames[0] + "." + to_string(i) + ".coeff";
+		string coeff_name = _filenames[0] + ".block" + to_string(i) + ".coeff";
 		group -> OutputFile( coeff_name, _cratio );
 
 #ifdef EVALUATE
@@ -206,15 +210,17 @@ Wavelet4D::FindRMS( const double* arr, size_t len)
     return sum;
 }
 
-/*
-int main()
+int main(int argc, char* argv[] )
 {
+	int cratio = 1;
+	if( argc == 2 )
+		cratio = atoi( argv[1] );
 	Wavelet4D wav( 128, 128, 128, 20);
-	string filepath = "/flash_buffer/Sam/HD_128/";
-	wav.SetFilePath( filepath );
-	wav.GenerateFilenames( 380, "vx" );
+	wav.SetCRatio( cratio );
+	string filepath = "/home/users/samuelli/Datasets/HD_128/enstrophy/enstrophy";
+	wav.GenerateFilenames( filepath, 550 );
 	
+	//wav.PrintFilenames();
 	wav.ParallelExec();
 
 }
-*/

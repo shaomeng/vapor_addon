@@ -29,10 +29,9 @@ public:
 	~Wavelet4D();
 
 	/*
-	 * assume all file names start with the same prefix,
-	 * and differ by an index.
+	 * Filenames differ at the index number at the last.
 	 */
-	void GenerateFilenames( const std::string &path, int startIdx, const std::string &var );
+	void GenerateFilenames( const std::string &path, int startIdx );
 	int ParallelExec();
 
 	void PrintBlockIndices();
@@ -40,12 +39,13 @@ public:
 	double FindMax( const double* arr, size_t len );
 	double FindRMS( const double* arr, size_t len);
 
+	void SetCRatio( int i )	{ _cratio = i; }
 
 protected:
 	size_t _NX, _NY, _NZ;	// spatial dimensions
 	size_t _NT;				// temporal dimension
 	size_t _BLOCKDIM;		// dimension of small blocks
-	size_t _BLOCKNUM;		// total number of blocks in one time step
+	size_t _BLOCKNUM;		// total number of blocks
 	int    _cratio;			// compression ratio
 	
 	std::vector<std::string> _filenames;
