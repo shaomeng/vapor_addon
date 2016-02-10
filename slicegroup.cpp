@@ -83,32 +83,53 @@ SliceGroup::Reconstruct( int ratio )
 int
 SliceGroup::OutputFile( const string& filename, int ratio )
 {
-	float nth = FindCoeffThreshold( ratio ); // use coeffs larger than nth.
-    float nnth = -1.0 * nth;
 	size_t nCoeffs = _nslices * _sliceLen;
-	size_t nCoeffWrite = nCoeffs / ratio;	// It's OK if not divisible
-	float* coeff = new float[ nCoeffWrite ];
-	size_t counter = 0;
-
-	for( size_t i = 0; i < nCoeffs; i++ ) {
-		if( _buf[i] > nth || _buf[i] < nnth )	
-			coeff[ counter++ ] = _buf[i];
-	}
-
-	FILE* f = fopen( filename.c_str(), "wb" );
-	if( f != NULL )
+	if( ratio > 1 )
 	{
-		size_t rt = fwrite ( coeff, sizeof(float), nCoeffWrite, f );
-		assert( rt == nCoeffWrite );
-		fclose(f);
-		delete[] coeff;
+		float nth = FindCoeffThreshold( ratio ); // use coeffs larger than nth.
+		float nnth = -1.0 * nth;
+		size_t nCoeffs = _nslices * _sliceLen;
+		size_t nCoeffWrite = nCoeffs / ratio;	// It's OK if not divisible
+		float* coeff = new float[ nCoeffWrite ];
+		size_t counter = 0;
+
+		for( size_t i = 0; i < nCoeffs; i++ ) {
+			if( _buf[i] > nth || _buf[i] < nnth )	
+				coeff[ counter++ ] = _buf[i];
+		}
+
+		FILE* f = fopen( filename.c_str(), "wb" );
+		if( f != NULL )
+		{
+			size_t rt = fwrite ( coeff, sizeof(float), nCoeffWrite, f );
+			assert( rt == nCoeffWrite );
+			fclose(f);
+			delete[] coeff;
+		}
+		else{
+			cerr << "file open error: " << filename << endl;
+			delete[] coeff;
+			exit(1);
+		}
+		return 0;
 	}
-	else{
-        cerr << "file open error: " << filename << endl;
-		delete[] coeff;
-        exit(1);
-    }
-	return 0;
+	else 
+	{
+		if( ratio < 1 )
+			cerr << "compression ratio has to be >= 1: " << ratio << endl;
+		FILE* f = fopen( filename.c_str(), "wb" );
+		if( f != NULL )
+		{
+			size_t rt = fwrite ( _buf, sizeof(float), nCoeffs, f );
+			assert( rt == nCoeffs );
+			fclose(f);
+		}
+		else{
+			cerr << "file open error: " << filename << endl;
+			exit(1);
+		}
+		return 0;
+	}
 }
 
 void
