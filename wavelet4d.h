@@ -27,8 +27,10 @@
 #ifdef INOTIFY
 #include <sys/inotify.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #define BUF_LEN (100 * (sizeof(struct inotify_event) + 255 + 1))
 #endif
+
 
 class Wavelet4D{
 
@@ -74,10 +76,8 @@ protected:
 	void CalcBlockIndices();
 
 #ifdef INOTIFY
-	/*
-	 * Test if the last file in _filenames has finished writting.
-	 */
-	bool FinishWriteLast(struct inotify_event *i);
+	/* Test if all files in _filenames are successfully written. */
+	bool FinishWriteAll(struct inotify_event *i);
 #endif
 
 };

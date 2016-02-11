@@ -6,6 +6,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
+
 Wavelet4D::Wavelet4D( long NX, long NY, long NZ, long NT )
 {
 
@@ -228,9 +229,9 @@ int main(int argc, char* argv[] )
 	string path = "/home/users/samuelli/Datasets/HD_128";
 	string name = "vz";
 	wav.SetPath( path );
-	wav.GenerateFilenames( name, 0 );
+	wav.GenerateFilenames( name, 1 );
 	
-	wav.PrintFilenames();
+	//wav.PrintFilenames();
 	wav.StartMonitor();
 	//wav.ParallelExec();
 
@@ -238,19 +239,32 @@ int main(int argc, char* argv[] )
 
 #ifdef INOTIFY
 bool
-Wavelet4D::FinishWriteLast(struct inotify_event *i)
+Wavelet4D::FinishWriteAll(struct inotify_event *event)
 {
 	string last = _filenames.back();
-	string current = _path + "/" + i->name;
-	if( (i->mask & IN_CLOSE_WRITE) && (current.compare(last)==0) ) 
+	string current = _path + "/" + event->name;
+	printf("%s\n", event->name );
+	if( (event->mask & IN_CLOSE_WRITE) && (current.compare(last)==0) ) 
 	{
+		/* inspect size */
 		long size_should = _NX * _NY * _NZ * 4;
-		FILE* f = fopen( last.c_str(), "rb" );
-		fseek( f, 0, SEEK_END );
-		long size_real = ftell(f);
-		fclose( f );
-		if( size_should == size_real )
+		struct stat buffer;
+		int status = stat(current.c_str(), &buffer);
+		
+		if( status==0 && size_should==(long)buffer.st_size )
+		{
+			/* make sure all files exist and have the correct size */
+			for( unsigned int i = 0; i < _filenames.size()-1; i++ )
+			{
+				status = stat(_filenames[i].c_str(), &buffer);
+				if( status!=0 || size_should!=(long)buffer.st_size )
+				{
+					cerr << "Error in file: " << _filenames[i] << endl;
+					return false;
+				}
+			}
 			return true;
+		}
 	}
 	return false;
 }
@@ -271,10 +285,7 @@ Wavelet4D::StartMonitor()
     if (inotifyFd == -1)
         perror("inotify_init() failed\n");
 
-    /* Add a watch for _path */
-	/* watch all events */
-	//wd = inotify_add_watch( inotifyFd, _path.c_str(), IN_ALL_EVENTS ); 
-	/* watch CLOSE_WRITE */
+    /* Add a watch for _path: only watch CLOSE_WRITE */
 	wd = inotify_add_watch( inotifyFd, _path.c_str(), IN_CLOSE_WRITE ); 
 	if (wd == -1)
 	{
@@ -288,16 +299,13 @@ Wavelet4D::StartMonitor()
         numRead = read(inotifyFd, buf, BUF_LEN);
 		if( numRead <= 0 )
 			perror("inotify read return value error!");
-		else
-        	printf("Read %ld bytes from inotify fd\n", numRead);
 
         /* Process all of the events in buffer returned by read() */
         for (p = buf; p < buf + numRead; ) {
             event = (struct inotify_event *) p;
-            //displayInotifyEvent(event);
-			if( FinishWriteLast(event) )
+			if( FinishWriteAll(event) )
 			{
-				printf("finish write file %s\n", _filenames.back().c_str() );			
+				printf("finish write all files in this group!\n");
 				stop = true;
 			}
 			if( event->len > 0 && (strcmp( event->name, "stop") == 0) )
