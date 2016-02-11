@@ -21,6 +21,14 @@
 #include "cube3d.h"
 #include "slicegroup.h"
 
+#define EVALUATE
+#define INOTIFY
+
+#ifdef INOTIFY
+#include <sys/inotify.h>
+#include <unistd.h>
+#define BUF_LEN (100 * (sizeof(struct inotify_event) + 255 + 1))
+#endif
 
 class Wavelet4D{
 
@@ -42,6 +50,10 @@ public:
 
 	void SetCRatio( int i )	{ _cratio = i; }
 
+#ifdef INOTIFY
+	void StartMonitor();
+#endif
+
 protected:
 	long _NX, _NY, _NZ;	// spatial dimensions
 	long _NT;				// temporal dimension
@@ -60,6 +72,14 @@ protected:
 							// startX, endX, startY, endY, startZ, endZ
 
 	void CalcBlockIndices();
+
+#ifdef INOTIFY
+	/*
+	 * Test if the last file in _filenames has finished writting.
+	 */
+	bool FinishWriteLast(struct inotify_event *i);
+#endif
+
 };
 
 #endif

@@ -1,6 +1,5 @@
 #include "wavelet4d.h"
 
-#define EVALUATE
 
 using std::string;
 using std::cout;
@@ -47,7 +46,7 @@ Wavelet4D::GenerateFilenames( const string &name, long idx)
 	_filenames.clear();
 
 	for( long i = 0; i < _NT; i++ ) {
-		sprintf( buf, ".%04ld", i+idx);
+		sprintf( buf, ".%04ld.out", i+idx);
 		string f = _path + "/" + name + buf;
 		_filenames.push_back( f );
 	}	
@@ -224,14 +223,91 @@ int main(int argc, char* argv[] )
 	int cratio = 1;
 	if( argc == 2 )
 		cratio = atoi( argv[1] );
-	Wavelet4D wav( 128, 128, 128, 20);
+	Wavelet4D wav( 128, 128, 128, 5);
 	wav.SetCRatio( cratio );
-	string path = "/home/users/samuelli/Datasets/HD_128/enstrophy";
-	string name = "enstrophy";
+	string path = "/home/users/samuelli/Datasets/HD_128";
+	string name = "vz";
 	wav.SetPath( path );
-	wav.GenerateFilenames( name, 550 );
+	wav.GenerateFilenames( name, 0 );
 	
 	wav.PrintFilenames();
+	wav.StartMonitor();
 	//wav.ParallelExec();
 
 }
+
+#ifdef INOTIFY
+bool
+Wavelet4D::FinishWriteLast(struct inotify_event *i)
+{
+	string last = _filenames.back();
+	string current = _path + "/" + i->name;
+	if( (i->mask & IN_CLOSE_WRITE) && (current.compare(last)==0) ) 
+	{
+		long size_should = _NX * _NY * _NZ * 4;
+		FILE* f = fopen( last.c_str(), "rb" );
+		fseek( f, 0, SEEK_END );
+		long size_real = ftell(f);
+		fclose( f );
+		if( size_should == size_real )
+			return true;
+	}
+	return false;
+}
+
+void
+Wavelet4D::StartMonitor()
+{
+	assert( !_path.empty() );
+	
+    int inotifyFd, wd;
+    char buf[BUF_LEN]; 
+    long numRead;
+    char *p;
+    struct inotify_event *event;
+
+
+    inotifyFd = inotify_init();                 /* Create inotify instance */
+    if (inotifyFd == -1)
+        perror("inotify_init() failed\n");
+
+    /* Add a watch for _path */
+	/* watch all events */
+	//wd = inotify_add_watch( inotifyFd, _path.c_str(), IN_ALL_EVENTS ); 
+	/* watch CLOSE_WRITE */
+	wd = inotify_add_watch( inotifyFd, _path.c_str(), IN_CLOSE_WRITE ); 
+	if (wd == -1)
+	{
+		perror("inotify_add_watch failed: ");
+		perror(_path.c_str());
+	}
+	printf("Watching %s using wd %d\n", _path.c_str(), wd);
+
+	bool stop = false;
+    while(!stop) {                                  /* Read events forever */
+        numRead = read(inotifyFd, buf, BUF_LEN);
+		if( numRead <= 0 )
+			perror("inotify read return value error!");
+		else
+        	printf("Read %ld bytes from inotify fd\n", numRead);
+
+        /* Process all of the events in buffer returned by read() */
+        for (p = buf; p < buf + numRead; ) {
+            event = (struct inotify_event *) p;
+            //displayInotifyEvent(event);
+			if( FinishWriteLast(event) )
+			{
+				printf("finish write file %s\n", _filenames.back().c_str() );			
+				stop = true;
+			}
+			if( event->len > 0 && (strcmp( event->name, "stop") == 0) )
+				stop = true;
+
+            p += sizeof(struct inotify_event) + event->len;
+        }
+
+    }
+	inotify_rm_watch( inotifyFd, wd );
+	close( inotifyFd );		/* close file discriptor */
+}
+#endif
