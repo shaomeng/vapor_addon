@@ -7,7 +7,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-Wavelet4D::Wavelet4D( size_t NX, size_t NY, size_t NZ, size_t NT )
+Wavelet4D::Wavelet4D( long NX, long NY, long NZ, long NT )
 {
 
 	_BLOCKDIM = 64;
@@ -20,6 +20,7 @@ Wavelet4D::Wavelet4D( size_t NX, size_t NY, size_t NZ, size_t NT )
 	_NT = NT;
 
 	_block_indices = NULL;
+	_path.clear();
 	CalcBlockIndices();
 }
 
@@ -31,16 +32,24 @@ Wavelet4D::~Wavelet4D()
 	}
 }
 
-void
-Wavelet4D::GenerateFilenames( const string &path, int idx)
+void 
+Wavelet4D::SetPath( const std::string &path )
 {
+	_path.clear();
+	_path = path;
+}
+
+void
+Wavelet4D::GenerateFilenames( const string &name, long idx)
+{
+	assert( !_path.empty());
 	char buf[256];
 	_filenames.clear();
 
-	for( unsigned int i = 0; i < _NT; i++ ) {
-		sprintf( buf, ".%04d", i+idx);
-		string name = path + buf;
-		_filenames.push_back(name);
+	for( long i = 0; i < _NT; i++ ) {
+		sprintf( buf, ".%04ld", i+idx);
+		string f = _path + "/" + name + buf;
+		_filenames.push_back( f );
 	}	
 }
 
@@ -51,20 +60,20 @@ Wavelet4D::CalcBlockIndices()
 	assert( _NY % _BLOCKDIM == 0 );
 	assert( _NZ % _BLOCKDIM == 0 );
 	
-	size_t x_block = _NX / _BLOCKDIM;				// number of blocks in X
-    size_t y_block = _NY / _BLOCKDIM;				// number of blocks in X
-    size_t z_block = _NZ / _BLOCKDIM;				// number of blocks in X
+	long x_block = _NX / _BLOCKDIM;				// number of blocks in X
+    long y_block = _NY / _BLOCKDIM;				// number of blocks in X
+    long z_block = _NZ / _BLOCKDIM;				// number of blocks in X
     _BLOCKNUM = x_block * y_block * z_block;   
 
-	_block_indices = new size_t[ _BLOCKNUM * 6 ];
-	size_t counter = 0;
+	_block_indices = new long[ _BLOCKNUM * 6 ];
+	long counter = 0;
 
 	/*
 	 * 6 indices for a cell are stored together.
 	 */
-	for( size_t k = 0; k < z_block; k++ )
-		for( size_t j = 0; j < y_block; j++ )
-			for( size_t i = 0; i < x_block; i++ )
+	for( long k = 0; k < z_block; k++ )
+		for( long j = 0; j < y_block; j++ )
+			for( long i = 0; i < x_block; i++ )
 			{
                 _block_indices[ counter++ ] = _BLOCKDIM *  i;		// startX
                 _block_indices[ counter++ ] = _BLOCKDIM * (i+1);	// endX
@@ -81,7 +90,7 @@ Wavelet4D::PrintBlockIndices()
 	if( _block_indices == NULL )
 		cerr << "_block_indices == NULL " << endl;
 	else
-		for( size_t i = 0; i < _BLOCKNUM; i++ )
+		for( long i = 0; i < _BLOCKNUM; i++ )
 			printf("%lu->%lu, %lu->%lu, %lu->%lu\n", 
 					_block_indices[ 6*i ],   _block_indices[ 6*i+1 ], 
 					_block_indices[ 6*i+2 ], _block_indices[ 6*i+3 ], 
@@ -118,12 +127,12 @@ Wavelet4D::ParallelExec()
 	int nthreads = (nthreadSys < _BLOCKNUM)? nthreadSys : _BLOCKNUM;
 	omp_set_num_threads( nthreads );
 	#pragma omp parallel for schedule( dynamic )
-	for( size_t i = 0; i < _BLOCKNUM; i++ )
+	for( long i = 0; i < _BLOCKNUM; i++ )
 	{
 		Cube3D** slices = new Cube3D*[ _NT ];
 		SliceGroup* group = new SliceGroup( _wavename );
 
-		for( size_t t = 0; t < _NT; t++ )
+		for( long t = 0; t < _NT; t++ )
 		{
 			slices[t] = new Cube3D( _filenames[t], _wavename, 
 					_BLOCKDIM, _BLOCKDIM, _BLOCKDIM, _NX, _NY, _NZ,
@@ -158,14 +167,14 @@ Wavelet4D::ParallelExec()
 #ifdef EVALUATE
 		group -> Reconstruct( _cratio );
 		group -> UpdateSlices();
-		for( size_t t = 0; t < _NT; t++ ) {
+		for( long t = 0; t < _NT; t++ ) {
 			slices[t] -> Reconstruct(1);
 			slices[t] -> Evaluate( rms4d[ i*_NT + t ], lmax4d[ i*_NT + t ] );
 		}
 #endif
 
 		if( group )				delete group;
-		for( size_t t = 0; t < _NT; t++ )
+		for( long t = 0; t < _NT; t++ )
 			if( slices[t] ) 	delete slices[t];
 		if( slices ) 			delete[] slices;
 	}
@@ -186,20 +195,20 @@ Wavelet4D::ParallelExec()
 }
 
 double 
-Wavelet4D::FindMax( const double* arr, size_t len ) {
+Wavelet4D::FindMax( const double* arr, long len ) {
     double max = 0;
-    for( size_t i = 0; i < len; i++ )
+    for( long i = 0; i < len; i++ )
         if( arr[i] > max )
             max = arr[i];
     return max;
 }
 
 double 
-Wavelet4D::FindRMS( const double* arr, size_t len)
+Wavelet4D::FindRMS( const double* arr, long len)
 {
     double sum = 0.0;
     double c = 0.0;
-    for( size_t i = 0; i < len; i++ ) {
+    for( long i = 0; i < len; i++ ) {
         double y = arr[i] * arr[i] - c;
         double t = sum + y;
         c = (t - sum) - y;
@@ -217,10 +226,12 @@ int main(int argc, char* argv[] )
 		cratio = atoi( argv[1] );
 	Wavelet4D wav( 128, 128, 128, 20);
 	wav.SetCRatio( cratio );
-	string filepath = "/home/users/samuelli/Datasets/HD_128/enstrophy/enstrophy";
-	wav.GenerateFilenames( filepath, 550 );
+	string path = "/home/users/samuelli/Datasets/HD_128/enstrophy";
+	string name = "enstrophy";
+	wav.SetPath( path );
+	wav.GenerateFilenames( name, 550 );
 	
-	//wav.PrintFilenames();
-	wav.ParallelExec();
+	wav.PrintFilenames();
+	//wav.ParallelExec();
 
 }

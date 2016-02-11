@@ -25,33 +25,37 @@
 class Wavelet4D{
 
 public:
-	Wavelet4D( size_t NX, size_t NY, size_t NZ, size_t NT );
+	Wavelet4D( long NX, long NY, long NZ, long NT );
 	~Wavelet4D();
 
+	void SetPath( const std::string &path );
 	/*
 	 * Filenames differ at the index number at the last.
 	 */
-	void GenerateFilenames( const std::string &path, int startIdx );
+	void GenerateFilenames( const std::string &name, long startIdx );
 	int ParallelExec();
 
 	void PrintBlockIndices();
 	void PrintFilenames();
-	double FindMax( const double* arr, size_t len );
-	double FindRMS( const double* arr, size_t len);
+	double FindMax( const double* arr, long len );
+	double FindRMS( const double* arr, long len);
 
 	void SetCRatio( int i )	{ _cratio = i; }
 
 protected:
-	size_t _NX, _NY, _NZ;	// spatial dimensions
-	size_t _NT;				// temporal dimension
-	size_t _BLOCKDIM;		// dimension of small blocks
-	size_t _BLOCKNUM;		// total number of blocks
+	long _NX, _NY, _NZ;	// spatial dimensions
+	long _NT;				// temporal dimension
+	long _BLOCKDIM;		// dimension of small blocks
+	long _BLOCKNUM;		// total number of blocks
 	int    _cratio;			// compression ratio
 	
 	std::vector<std::string> _filenames;
 	std::string  _wavename;
 
-	size_t* _block_indices;	// stores indices for each block at one time step
+    std::string _path;
+	
+
+	long* _block_indices;	// stores indices for each block at one time step
 							// 6 indices to specify a block:
 							// startX, endX, startY, endY, startZ, endZ
 
