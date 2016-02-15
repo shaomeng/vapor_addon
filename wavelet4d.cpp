@@ -7,10 +7,53 @@ using std::cerr;
 using std::endl;
 
 
+static float
+FindMin( const float* arr, long len ) {
+    float min = arr[0];
+    for( long i = 1; i < len; i++ )
+        if( arr[i] < min )
+            min = arr[i];
+    return min;
+}
+
+static float
+FindMax( const float* arr, long len ) {
+    float max = arr[0];
+    for( long i = 1; i < len; i++ )
+        if( arr[i] > max )
+            max = arr[i];
+    return max;
+}
+
+static double 
+FindMax( const double* arr, long len ) {
+    double max = arr[0];
+    for( long i = 1; i < len; i++ )
+        if( arr[i] > max )
+            max = arr[i];
+    return max;
+}
+
+static double 
+FindRMS( const double* arr, long len)
+{
+    double sum = 0.0;
+    double c = 0.0;
+    for( long i = 0; i < len; i++ ) {
+        double y = arr[i] * arr[i] - c;
+        double t = sum + y;
+        c = (t - sum) - y;
+        sum = t;
+    }
+    sum /= double(len);
+    sum = sqrt( sum );
+    return sum;
+}
+
 Wavelet4D::Wavelet4D( long NX, long NY, long NZ, long NT )
 {
 
-	_BLOCKDIM = 64;
+	_BLOCKDIM = 128;
 	_wavename = "bior4.4";
 	_cratio = 1;
 
@@ -118,14 +161,17 @@ Wavelet4D::ParallelExec()
 	double* lmax3d = new double[ _BLOCKNUM * _NT ];
 	double* rms4d = new double[ _BLOCKNUM * _NT ];
 	double* lmax4d = new double[ _BLOCKNUM * _NT ];
+	float*  min4d  = new float[ _BLOCKNUM * _NT ];
+	float*  max4d  = new float[ _BLOCKNUM * _NT ];
 #endif
 
 	/*
 	 * Each thread takes care of one index from _BLOCKNUM.
 	 */
-	int nthreadSys = omp_get_num_threads();
+	int nthreadSys = omp_get_max_threads();
 	int nthreads = (nthreadSys < _BLOCKNUM)? nthreadSys : _BLOCKNUM;
 	omp_set_num_threads( nthreads );
+
 	#pragma omp parallel for schedule( dynamic )
 	for( long i = 0; i < _BLOCKNUM; i++ )
 	{
@@ -139,30 +185,28 @@ Wavelet4D::ParallelExec()
 					_block_indices[ 6*i ],   _block_indices[ 6*i+1 ],
                     _block_indices[ 6*i+2 ], _block_indices[ 6*i+3 ],
                     _block_indices[ 6*i+4 ], _block_indices[ 6*i+5 ] );
-			slices[t] -> Decompose();
 
 #ifdef EVALUATE
-			/*
-			 * individual slice reconstruction and evaluation
-			 */
+			slices[t] -> GetMinMax( min4d[ i*_NT + t ], max4d[ i*_NT + t ] );
+
+			/* individual slice reconstruction and evaluation */
+			slices[t] -> Decompose();
 			slices[t] -> Reconstruct (_cratio);
 			slices[t] -> Evaluate( rms3d[ i*_NT + t ], lmax3d[ i*_NT + t ] );
 			slices[t] -> ReloadInputFile();
-			slices[t] -> Decompose();
 #endif
+			slices[t] -> Decompose();
 			group -> AddSlice( slices[t] );
 		}							
-		/*
-		 * Temporal compression
-		 */
+		/* Temporal compression */
 		group -> Initialize();
 		group -> Decompose();		// All coefficients stored now!
 
-		/*
-		 * Filename for output coefficients
- 		 */
+		/* Filename for output coefficients */
+#ifndef EVALUATE
 		string coeff_name = _filenames[0] + ".block" + to_string(i) + ".coeff";
 		group -> OutputFile( coeff_name, _cratio );
+#endif
 
 #ifdef EVALUATE
 		group -> Reconstruct( _cratio );
@@ -178,144 +222,51 @@ Wavelet4D::ParallelExec()
 			if( slices[t] ) 	delete slices[t];
 		if( slices ) 			delete[] slices;
 	}
+	/* OMP parallel section finish */
 
 #ifdef EVALUATE
-	printf("3D DWT RMS = %e, LMAX = %e\n", FindRMS( rms3d, _BLOCKNUM * _NT ),
+	float min = FindMin( min4d, _BLOCKNUM * _NT );
+	float max = FindMax( max4d, _BLOCKNUM * _NT );
+	double range = max - min;
+	printf("In %ld steps, min=%f, max=%f\n", _NT, min, max ); 
+	printf("3D DWT RMS = %e, LMAX = %e\n", FindRMS( rms3d,  _BLOCKNUM * _NT),
 										   FindMax( lmax3d, _BLOCKNUM * _NT));
-	printf("4D DWT RMS = %e, LMAX = %e\n", FindRMS( rms4d, _BLOCKNUM * _NT ),
+	printf("4D DWT RMS = %e, LMAX = %e\n", FindRMS( rms4d,  _BLOCKNUM * _NT),
 										   FindMax( lmax4d, _BLOCKNUM * _NT));
+	/*
+	printf("3D DWT NRMS = %e, NLMAX = %e\n", FindRMS( rms3d, _BLOCKNUM * _NT) / range,
+										    FindMax( lmax3d, _BLOCKNUM * _NT) / range);
+	printf("4D DWT NRMS = %e, NLMAX = %e\n", FindRMS( rms4d, _BLOCKNUM * _NT) / range,
+										    FindMax( lmax4d, _BLOCKNUM * _NT) / range);
+	*/
 	delete[] rms3d;
 	delete[] lmax3d;
 	delete[] rms4d;
 	delete[] lmax4d;
+	delete[] min4d;
+	delete[] max4d;
 #endif
 
 	return 0;
 
 }
 
-double 
-Wavelet4D::FindMax( const double* arr, long len ) {
-    double max = 0;
-    for( long i = 0; i < len; i++ )
-        if( arr[i] > max )
-            max = arr[i];
-    return max;
-}
-
-double 
-Wavelet4D::FindRMS( const double* arr, long len)
-{
-    double sum = 0.0;
-    double c = 0.0;
-    for( long i = 0; i < len; i++ ) {
-        double y = arr[i] * arr[i] - c;
-        double t = sum + y;
-        c = (t - sum) - y;
-        sum = t;
-    }
-    sum /= double(len);
-    sum = sqrt( sum );
-    return sum;
-}
-
-int main(int argc, char* argv[] )
-{
-	int cratio = 1;
-	if( argc == 2 )
-		cratio = atoi( argv[1] );
-	Wavelet4D wav( 128, 128, 128, 5);
-	wav.SetCRatio( cratio );
-	string path = "/home/users/samuelli/Datasets/HD_128";
-	string name = "vz";
-	wav.SetPath( path );
-	wav.GenerateFilenames( name, 1 );
-	
-	//wav.PrintFilenames();
-	wav.StartMonitor();
-	//wav.ParallelExec();
-
-}
-
-#ifdef INOTIFY
-bool
-Wavelet4D::FinishWriteAll(struct inotify_event *event)
-{
-	string last = _filenames.back();
-	string current = _path + "/" + event->name;
-	printf("%s\n", event->name );
-	if( (event->mask & IN_CLOSE_WRITE) && (current.compare(last)==0) ) 
-	{
-		/* inspect size */
-		long size_should = _NX * _NY * _NZ * 4;
-		struct stat buffer;
-		int status = stat(current.c_str(), &buffer);
-		
-		if( status==0 && size_should==(long)buffer.st_size )
-		{
-			/* make sure all files exist and have the correct size */
-			for( unsigned int i = 0; i < _filenames.size()-1; i++ )
-			{
-				status = stat(_filenames[i].c_str(), &buffer);
-				if( status!=0 || size_should!=(long)buffer.st_size )
-				{
-					cerr << "Error in file: " << _filenames[i] << endl;
-					return false;
-				}
-			}
-			return true;
-		}
-	}
-	return false;
-}
 
 void
 Wavelet4D::StartMonitor()
 {
-	assert( !_path.empty() );
-	
-    int inotifyFd, wd;
-    char buf[BUF_LEN]; 
-    long numRead;
-    char *p;
-    struct inotify_event *event;
-
-
-    inotifyFd = inotify_init();                 /* Create inotify instance */
-    if (inotifyFd == -1)
-        perror("inotify_init() failed\n");
-
-    /* Add a watch for _path: only watch CLOSE_WRITE */
-	wd = inotify_add_watch( inotifyFd, _path.c_str(), IN_CLOSE_WRITE ); 
-	if (wd == -1)
+	long size_should = _NX * _NY * _NZ * 4;
+	struct stat buffer;
+	for( long i = 0; i < _NT; i++ )
 	{
-		perror("inotify_add_watch failed: ");
-		perror(_path.c_str());
+		const char* name = _filenames[i].c_str();
+		int status;
+		while(true)
+		{
+			status = stat(name, &buffer );
+			if( status==0 && size_should==(long)buffer.st_size )
+				break;
+		}	
+
 	}
-	printf("Watching %s using wd %d\n", _path.c_str(), wd);
-
-	bool stop = false;
-    while(!stop) {                                  /* Read events forever */
-        numRead = read(inotifyFd, buf, BUF_LEN);
-		if( numRead <= 0 )
-			perror("inotify read return value error!");
-
-        /* Process all of the events in buffer returned by read() */
-        for (p = buf; p < buf + numRead; ) {
-            event = (struct inotify_event *) p;
-			if( FinishWriteAll(event) )
-			{
-				printf("finish write all files in this group!\n");
-				stop = true;
-			}
-			if( event->len > 0 && (strcmp( event->name, "stop") == 0) )
-				stop = true;
-
-            p += sizeof(struct inotify_event) + event->len;
-        }
-
-    }
-	inotify_rm_watch( inotifyFd, wd );
-	close( inotifyFd );		/* close file discriptor */
 }
-#endif

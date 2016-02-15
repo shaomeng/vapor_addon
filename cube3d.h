@@ -38,8 +38,9 @@ public:
 
     float GetCoeff( size_t idx );
     void PutCoeff( size_t idx, float c );
-    void CullCoeffs( float t ); // the threshold, t, must be positive.
-    void Evaluate( double& rms, double& lmax );
+    void CullCoeffs( float t ); 		// the threshold, t, must be positive.
+    void Evaluate(  double &rms, double &lmax );
+	void GetMinMax( float  &min, float &max );
 
     void Print10Elements();
 
@@ -47,7 +48,6 @@ public:
     size_t GetCoeffLen()    { return _clen; }
 
 protected:
-//    void ReadFile( float* buf );
     void ReadFileChunck( float* buf );
     string _filename;
     string _wavename;

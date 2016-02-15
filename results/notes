@@ -1,0 +1,5 @@
+1. 4D vs. 3D DWT, using w=9, has 2x-10x improvement.
+
+2. block size 128 vs. 64, has up to 10x improvement.
+
+3. window size 9 vs. 18, no significant improvement.

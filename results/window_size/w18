@@ -1,0 +1,44 @@
+# block_size = 128
+# variable=vz
+# cratio=8
+start idx: 1
+In 18 steps, min=-0.006489, max=0.006489
+4D DWT NRMS = 6.249567e-09, NLMAX = 2.870668e-07
+start idx: 19
+In 18 steps, min=-0.057883, max=0.057883
+4D DWT NRMS = 9.388286e-09, NLMAX = 2.252557e-07
+start idx: 37
+In 18 steps, min=-0.210257, max=0.210257
+4D DWT NRMS = 1.050971e-08, NLMAX = 2.480486e-07
+
+# cratio=16
+start idx: 1
+4D DWT NRMS = 7.574348e-09, NLMAX = 2.870668e-07
+start idx: 19
+4D DWT NRMS = 1.184058e-08, NLMAX = 2.574351e-07
+start idx: 37
+4D DWT NRMS = 1.584710e-08, NLMAX = 2.834841e-07
+
+# cratio=32
+start idx: 1
+4D DWT NRMS = 1.101256e-08, NLMAX = 2.870668e-07
+start idx: 19
+4D DWT NRMS = 2.009292e-08, NLMAX = 3.590013e-07
+start idx: 37
+4D DWT NRMS = 4.979797e-08, NLMAX = 9.036057e-07
+
+# cratio=64
+start idx: 1
+4D DWT NRMS = 4.297766e-08, NLMAX = 1.329927e-06
+start idx: 19
+4D DWT NRMS = 1.128689e-07, NLMAX = 3.057042e-06
+start idx: 37
+4D DWT NRMS = 2.794330e-07, NLMAX = 7.536692e-06
+
+# cratio=128
+start idx: 1
+4D DWT NRMS = 4.434810e-07, NLMAX = 1.868373e-05
+start idx: 19
+4D DWT NRMS = 1.417220e-06, NLMAX = 5.061416e-05
+start idx: 37
+4D DWT NRMS = 2.176843e-06, NLMAX = 8.792272e-05

@@ -1,0 +1,41 @@
+# block_size = 128
+# variable=vz
+# cratio=8
+start idx: 1
+4D DWT RMS = 9.1602917047e-11, LMAX = 3.725290e-09
+start idx: 19
+4D DWT RMS = 1.20213321863e-09, LMAX = 2.607703e-08
+start idx: 37
+4D DWT RMS = 5.04718450092e-09, LMAX = 8.940697e-08
+
+# cratio=16
+start idx: 1
+4D DWT RMS = 1.25621264312e-10, LMAX = 3.259629e-09
+start idx: 19
+4D DWT RMS = 1.81750707557e-09, LMAX = 2.607703e-08
+start idx: 37
+4D DWT RMS = 1.29829711329e-08, LMAX = 1.713634e-07
+
+# cratio=32
+start idx: 1
+4D DWT RMS = 3.79565447275e-10, LMAX = 1.026331e-08
+start idx: 19
+4D DWT RMS = 6.54623795991e-09, LMAX = 1.469161e-07
+start idx: 37
+4D DWT RMS = 5.99734278543e-08, LMAX = 1.143198e-06
+
+# cratio=64
+start idx: 1
+4D DWT RMS = 4.25845409143e-08, LMAX = 1.521112e-07
+start idx: 19
+4D DWT RMS = 7.18550820981e-08, LMAX = 2.059487e-06
+start idx: 37
+4D DWT RMS = 4.7141983252e-07, LMAX = 1.118286e-05
+
+# cratio=128
+start idx: 1
+4D DWT RMS = 4.74791234613e-08, LMAX = 1.406297e-06
+start idx: 19
+4D DWT RMS = 9.45337005336e-07, LMAX = 2.576012e-05
+start idx: 37
+4D DWT RMS = 5.27123789288e-06, LMAX = 1.493953e-04

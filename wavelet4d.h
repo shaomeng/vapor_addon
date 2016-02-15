@@ -22,14 +22,8 @@
 #include "slicegroup.h"
 
 #define EVALUATE
-#define INOTIFY
 
-#ifdef INOTIFY
-#include <sys/inotify.h>
-#include <unistd.h>
 #include <sys/stat.h>
-#define BUF_LEN (100 * (sizeof(struct inotify_event) + 255 + 1))
-#endif
 
 
 class Wavelet4D{
@@ -39,28 +33,27 @@ public:
 	~Wavelet4D();
 
 	void SetPath( const std::string &path );
+
 	/*
-	 * Filenames differ at the index number at the last.
+	 * Filenames differ at the index number.
 	 */
 	void GenerateFilenames( const std::string &name, long startIdx );
 	int ParallelExec();
 
 	void PrintBlockIndices();
 	void PrintFilenames();
-	double FindMax( const double* arr, long len );
-	double FindRMS( const double* arr, long len);
+	//double FindMax( const double* arr, long len );
+	//double FindRMS( const double* arr, long len);
 
 	void SetCRatio( int i )	{ _cratio = i; }
 
-#ifdef INOTIFY
 	void StartMonitor();
-#endif
 
 protected:
-	long _NX, _NY, _NZ;	// spatial dimensions
+	long _NX, _NY, _NZ;		// spatial dimensions
 	long _NT;				// temporal dimension
-	long _BLOCKDIM;		// dimension of small blocks
-	long _BLOCKNUM;		// total number of blocks
+	long _BLOCKDIM;			// dimension of small blocks
+	long _BLOCKNUM;			// total number of blocks
 	int    _cratio;			// compression ratio
 	
 	std::vector<std::string> _filenames;
@@ -74,11 +67,6 @@ protected:
 							// startX, endX, startY, endY, startZ, endZ
 
 	void CalcBlockIndices();
-
-#ifdef INOTIFY
-	/* Test if all files in _filenames are successfully written. */
-	bool FinishWriteAll(struct inotify_event *i);
-#endif
 
 };
 

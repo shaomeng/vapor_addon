@@ -209,7 +209,7 @@ Cube3D::CullCoeffs( float t )
 }
 
 void 
-Cube3D::Evaluate( double& rms, double& lmax )
+Cube3D::Evaluate( double &rms, double &lmax )
 {
     float* raw = new float[ _clen ];
     ReadFileChunck( raw );
@@ -232,6 +232,24 @@ Cube3D::Evaluate( double& rms, double& lmax )
     
     rms = sum;
     lmax = max;
+
+	delete[] raw;
+}
+
+void
+Cube3D::GetMinMax( float &min, float &max )
+{
+	assert( _C != NULL );
+	assert( _clen > 0 );
+	float lmin = _C[0];
+	float lmax = _C[0];
+	for( size_t i = 1; i < _clen; i++ )
+	{
+		if( _C[i] > lmax )		lmax = _C[i];
+		if( _C[i] < lmin )		lmin = _C[i];
+	}
+	min = lmin;
+	max = lmax;
 }
 
 float

@@ -1,6 +1,6 @@
 CC=gcc
 CXX=g++
-CXXFLAGS=-O2 -c -std=c++0x -Wall -DMODELS -m64 -g
+CXXFLAGS=-O3 -std=c++0x -Wall -DMODELS -m64 -g
 LDFLAGS=-m64
 
 ARCH=$(shell uname)
@@ -39,25 +39,25 @@ john_time_comp: john_time_comp.cpp
 	$(CXX) bin/john_time_comp.o -o bin/john_time_comp $(LDFLAGS) -L${VAPOR_BIN} -L$(VAPOR_LIB) -lwasp -lcommon 
 
 cube3d.o: cube3d.cpp cube3d.h
-	$(CXX) cube3d.cpp -o cube3d.o $(CXXFLAGS) -I${VAPOR_INC} -I. 
+	$(CXX) -c cube3d.cpp -o cube3d.o $(CXXFLAGS) -I${VAPOR_INC} -I. 
 #	$(CXX) cube3d.cpp -o bin/cube3d $(CXXFLAGS) $(LDFLAGS) -I${VAPOR_INC} -L${VAPOR_BIN} -L$(VAPOR_LIB) -lwasp -lcommon -I.
 
 slicegroup.o: slicegroup.cpp slicegroup.h
-	$(CXX) slicegroup.cpp  -o slicegroup.o $(CXXFLAGS) -I${VAPOR_INC}  -I.
+	$(CXX) -c slicegroup.cpp  -o slicegroup.o $(CXXFLAGS) -I${VAPOR_INC}  -I.
 
 temporal: temporal.cpp bin/cube3d.o bin/slicegroup.o 
-	$(CXX) temporal.cpp -o bin/temporal.o $(CXXFLAGS) -I${VAPOR_INC} -I. 
+	$(CXX) -c temporal.cpp -o bin/temporal.o $(CXXFLAGS) -I${VAPOR_INC} -I. 
 	$(CXX) bin/temporal.o bin/cube3d.o bin/slicegroup.o -o bin/temporal $(LDFLAGS) -L${VAPOR_BIN} -L$(VAPOR_LIB) -lwasp -lcommon 
 
 wavelet4d.o: wavelet4d.h wavelet4d.cpp
-	$(CXX) wavelet4d.cpp -o wavelet4d.o $(CXXFLAGS) -I. -I${VAPOR_INC} -fopenmp 
-#	$(CXX) bin/wavelet4d.o bin/cube3d.o bin/slicegroup.o -o bin/wavelet4d $(LDFLAGS) -L$(VAPOR_BIN) -L$(VAPOR_LIB) -lwasp -lcommon -fopenmp 
+	$(CXX) -c wavelet4d.cpp -o wavelet4d.o $(CXXFLAGS) -I. -I${VAPOR_INC} -fopenmp 
+#	$(CXX) wavelet4d.o cube3d.o slicegroup.o -o wavelet4d $(LDFLAGS) -L$(VAPOR_BIN) -L$(VAPOR_LIB) -lwasp -lcommon -fopenmp 
 
 libwavelet4d.a: wavelet4d.o cube3d.o slicegroup.o
 	ar -rsv libwavelet4d.a cube3d.o slicegroup.o wavelet4d.o
-	#ar rsv -o bin/libwavelet4d.a bin/cube3d.o bin/slicegroup.o bin/wavelet4d.o
 
-
+testwavelet4d: testwavelet4d.cpp libwavelet4d.a
+	$(CXX) $(CXXFLAGS) -I. -I${VAPOR_INC} testwavelet4d.cpp -o testwave -L. -lwavelet4d $(LDFLAGS) -L$(VAPOR_BIN) -L$(VAPOR_LIB) -lwasp -lcommon -fopenmp
 
 
 
