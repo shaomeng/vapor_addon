@@ -70,7 +70,7 @@ FindRMS2( const double* arr, long len, long denominator)
 Wavelet4D::Wavelet4D( long NX, long NY, long NZ, long NT )
 {
 
-	_BLOCKDIM = 96;
+	_BLOCKDIM = 40;
 	_wavename = "bior4.4";
 	_cratio = 1;
 
@@ -106,8 +106,10 @@ Wavelet4D::GenerateFilenames( const string &name, long idx)
 	char buf[256];
 	_filenames.clear();
 
+	int step = 2;
+
 	for( long i = 0; i < _NT; i++ ) {
-		sprintf( buf, "%03ld.float", i+idx);
+		sprintf( buf, "%04ld.float", i*step + idx);
 		string f = _path + "/" + name + buf;
 		_filenames.push_back( f );
 	}	
