@@ -38,6 +38,7 @@ public:
 	 * Filenames differ at the index number.
 	 */
 	void GenerateFilenames( const std::string &name, long startIdx );
+	void GenerateBkpFilenames( const std::string &path, const std::string &name, long startIdx );
 	int ParallelExec();
 
 	void PrintBlockIndices();
@@ -57,6 +58,7 @@ protected:
 	int    _cratio;			// compression ratio
 	
 	std::vector<std::string> _filenames;
+	std::vector<std::string> _bkpFilenames;
 	std::string  _wavename;
 
     std::string _path;

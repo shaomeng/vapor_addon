@@ -49,11 +49,28 @@ FindRMS( const double* arr, long len)
     sum = sqrt( sum );
     return sum;
 }
+static double 
+FindRMS2( const double* arr, long len, long denominator)
+{
+    double sum = 0.0;
+    double c = 0.0;
+    for( long i = 0; i < len; i++ ) {
+        double y = arr[i] - c;
+        double t = sum + y;
+        c = (t - sum) - y;
+        sum = t;
+    }
+    sum /= double(denominator);
+    sum = sqrt( sum );
+    return sum;
+}
 
+
+/* constructor */
 Wavelet4D::Wavelet4D( long NX, long NY, long NZ, long NT )
 {
 
-	_BLOCKDIM = 128;
+	_BLOCKDIM = 96;
 	_wavename = "bior4.4";
 	_cratio = 1;
 
@@ -90,9 +107,22 @@ Wavelet4D::GenerateFilenames( const string &name, long idx)
 	_filenames.clear();
 
 	for( long i = 0; i < _NT; i++ ) {
-		sprintf( buf, ".%04ld.out", i+idx);
+		sprintf( buf, "%03ld.float", i+idx);
 		string f = _path + "/" + name + buf;
 		_filenames.push_back( f );
+	}	
+}
+
+void
+Wavelet4D::GenerateBkpFilenames( const string &path, const string &name, long idx)
+{
+	char buf[256];
+	_bkpFilenames.clear();
+
+	for( long i = 0; i < _NT; i++ ) {
+		sprintf( buf, "%02ld.float", i+idx);
+		string f = path + "/" + name + buf;
+		_bkpFilenames.push_back( f );
 	}	
 }
 
@@ -163,6 +193,9 @@ Wavelet4D::ParallelExec()
 	double* lmax4d = new double[ _BLOCKNUM * _NT ];
 	float*  min4d  = new float[ _BLOCKNUM * _NT ];
 	float*  max4d  = new float[ _BLOCKNUM * _NT ];
+	double*  squaresum3d  = new double[ _BLOCKNUM * _NT ];
+	double*  squaresum4d  = new double[ _BLOCKNUM * _NT ];
+	long*   numNonSpecial = new long[ _BLOCKNUM * _NT ];
 #endif
 
 	/*
@@ -171,6 +204,7 @@ Wavelet4D::ParallelExec()
 	int nthreadSys = omp_get_max_threads();
 	int nthreads = (nthreadSys < _BLOCKNUM)? nthreadSys : _BLOCKNUM;
 	omp_set_num_threads( nthreads );
+	//printf("system thread = %d, _BLOCKNUM = %d\n", nthreadSys, _BLOCKNUM );
 
 	#pragma omp parallel for schedule( dynamic )
 	for( long i = 0; i < _BLOCKNUM; i++ )
@@ -193,6 +227,8 @@ Wavelet4D::ParallelExec()
 			slices[t] -> Decompose();
 			slices[t] -> Reconstruct (_cratio);
 			slices[t] -> Evaluate( rms3d[ i*_NT + t ], lmax3d[ i*_NT + t ] );
+			//slices[t] -> EvaluateWithAnotherFile( _bkpFilenames[t], numNonSpecial[ i*_NT + t],
+			//									 squaresum3d[ i*_NT + t ], lmax3d[ i*_NT + t ] );
 			slices[t] -> ReloadInputFile();
 #endif
 			slices[t] -> Decompose();
@@ -214,6 +250,8 @@ Wavelet4D::ParallelExec()
 		for( long t = 0; t < _NT; t++ ) {
 			slices[t] -> Reconstruct(1);
 			slices[t] -> Evaluate( rms4d[ i*_NT + t ], lmax4d[ i*_NT + t ] );
+			//slices[t] -> EvaluateWithAnotherFile( _bkpFilenames[t], numNonSpecial[ i*_NT + t],
+			//									 squaresum4d[ i*_NT + t ], lmax4d[ i*_NT + t ] );
 		}
 #endif
 
@@ -227,18 +265,34 @@ Wavelet4D::ParallelExec()
 #ifdef EVALUATE
 	float min = FindMin( min4d, _BLOCKNUM * _NT );
 	float max = FindMax( max4d, _BLOCKNUM * _NT );
-	double range = max - min;
 	printf("In %ld steps, min=%f, max=%f\n", _NT, min, max ); 
+	/* Compile results from Evaluate() */
 	printf("3D DWT RMS = %e, LMAX = %e\n", FindRMS( rms3d,  _BLOCKNUM * _NT),
 										   FindMax( lmax3d, _BLOCKNUM * _NT));
 	printf("4D DWT RMS = %e, LMAX = %e\n", FindRMS( rms4d,  _BLOCKNUM * _NT),
 										   FindMax( lmax4d, _BLOCKNUM * _NT));
+
+	/* Compile results from EvaluateWithAnotherFile() */
+ 	/*
+	long total_non_special = 0;
+	for( long i = 0; i < _BLOCKNUM * _NT; i++ )
+		total_non_special += numNonSpecial[i];
+	printf("3D DWT RMS = %e, LMAX = %e\n", FindRMS2( squaresum3d, _BLOCKNUM * _NT, total_non_special),
+										   FindMax( lmax3d, _BLOCKNUM * _NT));
+	printf("4D DWT RMS = %e, LMAX = %e\n", FindRMS2( squaresum4d, _BLOCKNUM * _NT, total_non_special),
+										   FindMax( lmax4d, _BLOCKNUM * _NT));
+	*/
+
 	/*
+	double range = max - min;
 	printf("3D DWT NRMS = %e, NLMAX = %e\n", FindRMS( rms3d, _BLOCKNUM * _NT) / range,
 										    FindMax( lmax3d, _BLOCKNUM * _NT) / range);
 	printf("4D DWT NRMS = %e, NLMAX = %e\n", FindRMS( rms4d, _BLOCKNUM * _NT) / range,
 										    FindMax( lmax4d, _BLOCKNUM * _NT) / range);
 	*/
+	delete[]  squaresum3d;
+	delete[]  squaresum4d;
+	delete[]  numNonSpecial;
 	delete[] rms3d;
 	delete[] lmax3d;
 	delete[] rms4d;
