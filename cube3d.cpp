@@ -236,6 +236,45 @@ Cube3D::Evaluate( double &rms, double &lmax )
 	delete[] raw;
 }
 
+void 
+Cube3D::EvaluateWithAnotherFile( string anotherFileName, long &numNonSpecial,
+								 double &squaresum, double &lmax )
+{
+	/* temporarily redirect filename of current cube */
+	string origFilename = _filename;
+	_filename = anotherFileName;
+
+	/* perform evaluation excluding special values */
+    float* raw = new float[ _clen ];
+    ReadFileChunck( raw );
+
+    double sum = 0.0;
+    double c = 0.0;
+    double max = 0.0;
+    double tmp;
+	long no_special_count = 0;
+    for( size_t i = 0; i < _clen; i++) 
+		if( raw[i] < 1e+34 )
+		{
+			tmp = (double)raw[i] - (double)_C[i];
+			double y = tmp * tmp - c;
+			double t = sum + y;
+			c = (t - sum) - y;
+			sum = t;
+			if (fabs(tmp) > max)      max = fabs(tmp);
+			no_special_count++;
+		}
+    
+	numNonSpecial = no_special_count;
+    squaresum = sum;
+    lmax = max;
+
+	delete[] raw;
+
+	/* restore the original filename */
+	_filename = origFilename;
+}
+
 void
 Cube3D::GetMinMax( float &min, float &max )
 {
