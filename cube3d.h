@@ -33,8 +33,15 @@ public:
 			  size_t startY, size_t endY,
 			  size_t startZ, size_t endZ );
     ~Cube3D();
-    int Decompose();
-    int Reconstruct(int ratio);
+    int Decompose();	// 3D decomposition
+    void DecomposeX();	// 1D decomposition in X 
+    void DecomposeY();	// 1D decomposition in Y
+    void DecomposeZ();	// 1D decomposition in Z
+
+    int Reconstruct(int ratio);		// 3D reconstruction
+    void ReconstructX(int ratio);	// 1D reconstruction in X
+    void ReconstructY(int ratio);	// 1D reconstruction in X
+    void ReconstructZ(int ratio);	// 1D reconstruction in X
 
     float GetCoeff( size_t idx );
     void PutCoeff( size_t idx, float c );
@@ -78,6 +85,7 @@ protected:
     size_t* _L;
 
     float FindCoeffThreshold( int ratio );
+	size_t xyz2idx( size_t x, size_t y, size_t z );
 };
 
 

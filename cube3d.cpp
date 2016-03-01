@@ -147,6 +147,192 @@ Cube3D::Decompose()
     return rc;
 }
 
+size_t
+Cube3D::xyz2idx( size_t x, size_t y, size_t z )
+{
+	return (z * _NX * _NY + y * _NX + x);
+}
+
+void
+Cube3D::DecomposeX()
+{
+	VAPoR::MatWaveWavedec mw1d( _wavename );
+	size_t nlevels1d = mw1d.wmaxlev( _NX );
+	size_t l1d[ nlevels1d+2 ];
+
+	float  src[ _NX ];
+	float* buf = new float[ _clen ];
+
+	for( size_t z = 0; z < _NZ; z++ )
+		for( size_t y = 0; y < _NY; y++ )
+		{
+			for( size_t x = 0; x < _NX; x++ )
+				src[x] = _C[ xyz2idx(x, y, z) ];
+
+			float* dst = buf + xyz2idx(0, y, z);
+
+			int rc = mw1d.wavedec( src, _NX, nlevels1d, dst, l1d );
+			assert( rc >= 0 );
+		}
+
+    delete[] _C;
+    _C = buf;
+}
+
+void
+Cube3D::ReconstructX( int ratio )
+{
+    if( ratio > 1 ) {   						// cull coefficients
+        float nth = FindCoeffThreshold(ratio);  // nth largest, indexing from 1.
+        CullCoeffs( nth );
+    }
+	VAPoR::MatWaveWavedec mw1d( _wavename );
+	size_t nlevels1d = mw1d.wmaxlev( _NX );
+	size_t l1d[ nlevels1d+2 ];
+	mw1d.computeL( _NX, nlevels1d, l1d );
+
+    float* buf = new float[ _NX * _NY * _NZ ];
+	float  dst[ _NX ];
+
+	for( size_t z = 0; z < _NZ; z++ )
+		for( size_t y = 0; y < _NY; y++ )
+		{
+			float* src = _C + xyz2idx(0, y, z);
+			int rc = mw1d.waverec( src, l1d, nlevels1d, dst );
+			assert( rc >= 0 );
+
+			for( size_t x = 0; x < _NX; x++ )
+				buf[ xyz2idx(x, y, z) ] = dst[x];
+		}
+
+    delete[] _C;
+    _C = buf;
+}
+
+
+void
+Cube3D::DecomposeY()
+{
+	VAPoR::MatWaveWavedec mw1d( _wavename );
+	size_t nlevels1d = mw1d.wmaxlev( _NY );
+	size_t l1d[ nlevels1d+2 ];
+
+	float  src[ _NY ];
+	float  dst[ _NY ];
+	float* buf = new float[ _clen ];
+
+	for( size_t z = 0; z < _NZ; z++ )
+		for( size_t x = 0; x < _NX; x++ )
+		{
+			for( size_t y = 0; y < _NY; y++ )
+				src[y] = _C[ xyz2idx(x, y, z) ];
+
+			int rc = mw1d.wavedec( src, _NY, nlevels1d, dst, l1d );
+			assert( rc >= 0 );
+
+			for( size_t y = 0; y < _NY; y++ )
+				buf[ xyz2idx(x, y, z) ] = dst[y];
+		}
+
+    delete[] _C;
+    _C = buf;
+}
+
+void
+Cube3D::ReconstructY( int ratio )
+{
+    if( ratio > 1 ) {   						// cull coefficients
+        float nth = FindCoeffThreshold(ratio);  // nth largest, indexing from 1.
+        CullCoeffs( nth );
+    }
+	VAPoR::MatWaveWavedec mw1d( _wavename );
+	size_t nlevels1d = mw1d.wmaxlev( _NY );
+	size_t l1d[ nlevels1d+2 ];
+	mw1d.computeL( _NY, nlevels1d, l1d );
+
+    float* buf = new float[ _NX * _NY * _NZ ];
+	float  src[ _NY ];
+	float  dst[ _NY ];
+
+	for( size_t z = 0; z < _NZ; z++ )
+		for( size_t x = 0; x < _NX; x++ )
+		{
+			for( size_t y = 0; y < _NY; y++ )
+				src[y] = _C[ xyz2idx(x, y, z) ];
+	
+			int rc = mw1d.waverec( src, l1d, nlevels1d, dst );
+			assert( rc >= 0 );
+
+			for( size_t y = 0; y < _NY; y++ )
+				buf[ xyz2idx(x, y, z) ] = dst[y];
+		}
+
+    delete[] _C;
+    _C = buf;
+}
+
+void
+Cube3D::DecomposeZ()
+{
+	VAPoR::MatWaveWavedec mw1d( _wavename );
+	size_t nlevels1d = mw1d.wmaxlev( _NZ );
+	size_t l1d[ nlevels1d+2 ];
+
+	float  src[ _NZ ];
+	float  dst[ _NZ ];
+	float* buf = new float[ _clen ];
+
+	for( size_t y = 0; y < _NY; y++ )
+		for( size_t x = 0; x < _NX; x++ )
+		{
+			for( size_t z = 0; z < _NZ; z++ )
+				src[z] = _C[ xyz2idx(x, y, z) ];
+
+			int rc = mw1d.wavedec( src, _NZ, nlevels1d, dst, l1d );
+			assert( rc >= 0 );
+
+			for( size_t z = 0; z < _NZ; z++ )
+				buf[ xyz2idx(x, y, z) ] = dst[z];
+		}
+
+    delete[] _C;
+    _C = buf;
+}
+
+void
+Cube3D::ReconstructZ( int ratio )
+{
+    if( ratio > 1 ) {   						// cull coefficients
+        float nth = FindCoeffThreshold(ratio);  // nth largest, indexing from 1.
+        CullCoeffs( nth );
+    }
+	VAPoR::MatWaveWavedec mw1d( _wavename );
+	size_t nlevels1d = mw1d.wmaxlev( _NZ );
+	size_t l1d[ nlevels1d+2 ];
+	mw1d.computeL( _NZ, nlevels1d, l1d );
+
+    float* buf = new float[ _NX * _NY * _NZ ];
+	float  src[ _NZ ];
+	float  dst[ _NZ ];
+
+	for( size_t y = 0; y < _NY; y++ )
+		for( size_t x = 0; x < _NX; x++ )
+		{
+			for( size_t z = 0; z < _NZ; z++ )
+				src[z] = _C[ xyz2idx(x, y, z) ];
+	
+			int rc = mw1d.waverec( src, l1d, nlevels1d, dst );
+			assert( rc >= 0 );
+
+			for( size_t z = 0; z < _NZ; z++ )
+				buf[ xyz2idx(x, y, z) ] = dst[z];
+		}
+
+    delete[] _C;
+    _C = buf;
+}
+
+
 int
 Cube3D::Reconstruct( int ratio )
 {
@@ -328,34 +514,41 @@ Cube3D::Print10Elements()
 }
 	
 
-/*
 int main( int argc, char* argv[] )
 {
 	string filename = argv[1];
+	int cratio = atoi( argv[2] );
 
-	int NX = 64;
-	int NY = 64;
-	int NZ = 64;
+	int NX = 40;
+	int NY = 40;
+	int NZ = 40;
 
-	int NX_total = 128;
-	int NY_total = 128;
-	int NZ_total = 128;
+	int NX_total = 480;
+	int NY_total = 480;
+	int NZ_total = 280;
 
-	int startX = 64;
-	int endX   = 128;
-	int startY = 0;
-	int endY   = 64;
-	int startZ = 64;
-	int endZ   = 128;
+	int startX = 40;
+	int endX   = 80;
+	int startY = 40;
+	int endY   = 80;
+	int startZ = 40;
+	int endZ   = 80;
 
 	Cube3D* slice = new Cube3D( filename, "bior4.4", NX, NY, NZ, 
 								NX_total, NY_total, NZ_total,
 								startX, endX, startY, endY, startZ, endZ );
 
 	slice->Print10Elements();
+	
+	slice->DecomposeZ();
+	slice->ReconstructZ( cratio );
+
+	slice->Print10Elements();
+	
+	double rms, lmax;
+	slice->Evaluate( rms, lmax );
+	printf("rms = %e, lmax=%e\n", rms, lmax );
 
 
 	delete slice;
-
 }
-*/
