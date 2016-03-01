@@ -269,10 +269,12 @@ Wavelet4D::ParallelExec()
 	float max = FindMax( max4d, _BLOCKNUM * _NT );
 	printf("In %ld steps, min=%f, max=%f\n", _NT, min, max ); 
 	/* Compile results from Evaluate() */
+	/*
 	printf("3D DWT RMS = %e, LMAX = %e\n", FindRMS( rms3d,  _BLOCKNUM * _NT),
 										   FindMax( lmax3d, _BLOCKNUM * _NT));
 	printf("4D DWT RMS = %e, LMAX = %e\n", FindRMS( rms4d,  _BLOCKNUM * _NT),
 										   FindMax( lmax4d, _BLOCKNUM * _NT));
+	*/
 
 	/* Compile results from EvaluateWithAnotherFile() */
  	/*
@@ -285,13 +287,137 @@ Wavelet4D::ParallelExec()
 										   FindMax( lmax4d, _BLOCKNUM * _NT));
 	*/
 
-	/*
 	double range = max - min;
 	printf("3D DWT NRMS = %e, NLMAX = %e\n", FindRMS( rms3d, _BLOCKNUM * _NT) / range,
 										    FindMax( lmax3d, _BLOCKNUM * _NT) / range);
 	printf("4D DWT NRMS = %e, NLMAX = %e\n", FindRMS( rms4d, _BLOCKNUM * _NT) / range,
 										    FindMax( lmax4d, _BLOCKNUM * _NT) / range);
+
+	delete[]  squaresum3d;
+	delete[]  squaresum4d;
+	delete[]  numNonSpecial;
+	delete[] rms3d;
+	delete[] lmax3d;
+	delete[] rms4d;
+	delete[] lmax4d;
+	delete[] min4d;
+	delete[] max4d;
+#endif
+
+	return 0;
+}
+
+int
+Wavelet4D::OneDimParallelExec()
+{
+#ifdef EVALUATE
+	/*
+  	 * RMS and LMAX with same block index but different _NT are stored together
+	 */
+	double* rms3d = new double[ _BLOCKNUM * _NT ];
+	double* lmax3d = new double[ _BLOCKNUM * _NT ];
+	double* rms4d = new double[ _BLOCKNUM * _NT ];
+	double* lmax4d = new double[ _BLOCKNUM * _NT ];
+	float*  min4d  = new float[ _BLOCKNUM * _NT ];
+	float*  max4d  = new float[ _BLOCKNUM * _NT ];
+	double*  squaresum3d  = new double[ _BLOCKNUM * _NT ];
+	double*  squaresum4d  = new double[ _BLOCKNUM * _NT ];
+	long*   numNonSpecial = new long[ _BLOCKNUM * _NT ];
+#endif
+
+	/*
+	 * Each thread takes care of one index from _BLOCKNUM.
+	 */
+	int nthreadSys = omp_get_max_threads();
+	int nthreads = (nthreadSys < _BLOCKNUM)? nthreadSys : _BLOCKNUM;
+	omp_set_num_threads( nthreads );
+	//printf("system thread = %d, _BLOCKNUM = %d\n", nthreadSys, _BLOCKNUM );
+
+	#pragma omp parallel for schedule( dynamic )
+	for( long i = 0; i < _BLOCKNUM; i++ )
+	{
+		Cube3D** slices = new Cube3D*[ _NT ];
+		SliceGroup* group = new SliceGroup( _wavename );
+
+		for( long t = 0; t < _NT; t++ )
+		{
+			slices[t] = new Cube3D( _filenames[t], _wavename, 
+					_BLOCKDIM, _BLOCKDIM, _BLOCKDIM, _NX, _NY, _NZ,
+					_block_indices[ 6*i ],   _block_indices[ 6*i+1 ],
+                    _block_indices[ 6*i+2 ], _block_indices[ 6*i+3 ],
+                    _block_indices[ 6*i+4 ], _block_indices[ 6*i+5 ] );
+
+#ifdef EVALUATE
+			slices[t] -> GetMinMax( min4d[ i*_NT + t ], max4d[ i*_NT + t ] );
+
+			/* individual slice reconstruction and evaluation */
+			slices[t] -> Decompose();
+			slices[t] -> Reconstruct (_cratio);
+			slices[t] -> Evaluate( rms3d[ i*_NT + t ], lmax3d[ i*_NT + t ] );
+			//slices[t] -> EvaluateWithAnotherFile( _bkpFilenames[t], numNonSpecial[ i*_NT + t],
+			//									 squaresum3d[ i*_NT + t ], lmax3d[ i*_NT + t ] );
+			slices[t] -> ReloadInputFile();
+#endif
+			//slices[t] -> Decompose();
+			group -> AddSlice( slices[t] );
+		}							
+		/* Temporal compression */
+		group -> Initialize();
+		group -> Decompose();		// All coefficients stored now!
+
+		/* Filename for output coefficients */
+#ifndef EVALUATE
+		string coeff_name = _filenames[0] + ".block" + to_string(i) + ".coeff";
+		group -> OutputFile( coeff_name, _cratio );
+#endif
+
+#ifdef EVALUATE
+		group -> Reconstruct( _cratio );
+		group -> UpdateSlices();
+		for( long t = 0; t < _NT; t++ ) {
+			slices[t] -> Reconstruct(1);
+			slices[t] -> Evaluate( rms4d[ i*_NT + t ], lmax4d[ i*_NT + t ] );
+			//slices[t] -> EvaluateWithAnotherFile( _bkpFilenames[t], numNonSpecial[ i*_NT + t],
+			//									 squaresum4d[ i*_NT + t ], lmax4d[ i*_NT + t ] );
+		}
+#endif
+
+		if( group )				delete group;
+		for( long t = 0; t < _NT; t++ )
+			if( slices[t] ) 	delete slices[t];
+		if( slices ) 			delete[] slices;
+	}
+	/* OMP parallel section finish */
+
+#ifdef EVALUATE
+	float min = FindMin( min4d, _BLOCKNUM * _NT );
+	float max = FindMax( max4d, _BLOCKNUM * _NT );
+	printf("In %ld steps, min=%f, max=%f\n", _NT, min, max ); 
+	/* Compile results from Evaluate() */
+	/*
+	printf("3D DWT RMS = %e, LMAX = %e\n", FindRMS( rms3d,  _BLOCKNUM * _NT),
+										   FindMax( lmax3d, _BLOCKNUM * _NT));
+	printf("4D DWT RMS = %e, LMAX = %e\n", FindRMS( rms4d,  _BLOCKNUM * _NT),
+										   FindMax( lmax4d, _BLOCKNUM * _NT));
 	*/
+
+	/* Compile results from EvaluateWithAnotherFile() */
+ 	/*
+	long total_non_special = 0;
+	for( long i = 0; i < _BLOCKNUM * _NT; i++ )
+		total_non_special += numNonSpecial[i];
+	printf("3D DWT RMS = %e, LMAX = %e\n", FindRMS2( squaresum3d, _BLOCKNUM * _NT, total_non_special),
+										   FindMax( lmax3d, _BLOCKNUM * _NT));
+	printf("4D DWT RMS = %e, LMAX = %e\n", FindRMS2( squaresum4d, _BLOCKNUM * _NT, total_non_special),
+										   FindMax( lmax4d, _BLOCKNUM * _NT));
+	*/
+
+	double range = max - min;
+	printf("3D DWT NRMS = %e, NLMAX = %e\n", FindRMS( rms3d, _BLOCKNUM * _NT) / range,
+										    FindMax( lmax3d, _BLOCKNUM * _NT) / range);
+	printf("1D DWT NRMS = %e, NLMAX = %e\n", FindRMS( rms4d, _BLOCKNUM * _NT) / range,
+										    FindMax( lmax4d, _BLOCKNUM * _NT) / range);
+
 	delete[]  squaresum3d;
 	delete[]  squaresum4d;
 	delete[]  numNonSpecial;
@@ -306,6 +432,7 @@ Wavelet4D::ParallelExec()
 	return 0;
 
 }
+
 
 
 void

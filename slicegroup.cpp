@@ -41,14 +41,15 @@ SliceGroup::Initialize( )
 void
 SliceGroup::Decompose( )
 {
-    VAPoR::MatWaveWavedec mv( _wavename );
+    //VAPoR::MatWaveWavedec mv( _wavename );
     size_t l1d[ _nlevels1d+2 ];
 
     for( size_t i = 0; i < _sliceLen; i++ )
     {
         float* src = _buf + i*_nslices;
         float dst[ _nslices ];
-        int rc = mv.wavedec( src, _nslices, _nlevels1d, dst, l1d );
+        //int rc = mv.wavedec( src, _nslices, _nlevels1d, dst, l1d );
+        int rc = _mw -> wavedec( src, _nslices, _nlevels1d, dst, l1d );
         assert (rc >= 0 );
         memcpy( src, dst, sizeof(float) * _nslices );
     }
@@ -62,7 +63,7 @@ SliceGroup::Reconstruct( int ratio )
     float nth = FindCoeffThreshold( ratio ); // use coeffs larger than nth.
     float nnth = -1.0 * nth;
 
-    VAPoR::MatWaveWavedec mv( _wavename );
+    //VAPoR::MatWaveWavedec mv( _wavename );
     float src[ _nslices ];
 	float c, rc;
 
@@ -75,7 +76,8 @@ SliceGroup::Reconstruct( int ratio )
             else                        src[j] = c;
         }
         float* dst = _buf + i*_nslices;
-        rc = mv.waverec( src, L1d, _nlevels1d, dst );
+        //rc = mv.waverec( src, L1d, _nlevels1d, dst );
+        rc = _mw -> waverec( src, L1d, _nlevels1d, dst );
         assert (rc >= 0 );
     }
 }

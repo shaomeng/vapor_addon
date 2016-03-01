@@ -41,6 +41,9 @@ public:
 	void GenerateBkpFilenames( const std::string &path, const std::string &name, long startIdx );
 	int ParallelExec();
 
+	/* only performs DWT in the time dimension */
+	int OneDimParallelExec();
+
 	void PrintBlockIndices();
 	void PrintFilenames();
 	//double FindMax( const double* arr, long len );
