@@ -125,6 +125,16 @@ Cube3D::ReadFileChunck( float* buf )
     }
 }
 
+void 
+Cube3D::OutputToFile( string &outputFilename )
+{
+	FILE* f = fopen( outputFilename.c_str(), "wb" );
+	assert( f != NULL );
+	fwrite( _C, sizeof(float), _clen, f );
+	fclose( f );
+}
+
+
 Cube3D::~Cube3D()
 {
     if( _mw )           delete _mw;

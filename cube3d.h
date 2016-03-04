@@ -59,6 +59,8 @@ public:
     void ReloadInputFile()  { ReadFileChunck( _C ); }
     size_t GetCoeffLen()    { return _clen; }
 
+	void OutputToFile( string &outputFilename );
+
 protected:
     void ReadFileChunck( float* buf );
     string _filename;
