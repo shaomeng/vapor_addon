@@ -1,16 +1,16 @@
 #include "wavelet4d.h"
-
 #include <string>
 
 using std::string;
 
 int main(int argc, char* argv[] )
 {
-	int startIdx = 2;
-	int total_steps = 198;
-	int each_group = 9;
+	int startIdx = 350;
+	int total_steps = 18;
+	int each_group = 18;
 	int cratio = 8;
-	string name = "viscosity";
+	string name = "vortmag";
+	char d = 'A';
 	if( argc == 2 )
 		cratio = atoi( argv[1] );
 	if( argc == 3 )
@@ -18,22 +18,39 @@ int main(int argc, char* argv[] )
 		cratio = atoi( argv[1] );
 		name = argv[2];
 	}
-	Wavelet4D wav( 96, 96, 96, each_group);
+	if( argc == 4 )
+	{
+		cratio = atoi( argv[1] );
+		name = argv[2];
+		d = argv[3][0];
+	}
+	Wavelet4D wav( 512, 512, 512, each_group);
 	wav.SetCRatio( cratio );
-	string path = "/home/users/samuelli/Datasets/cloverleaf/viscosity";
-	string pathCompare = "/home/users/samuelli/Datasets/Hurricane_w_special_values";
+	//string path = "/home/users/samuelli/Datasets/Orf/" + name + "_cropped";
+	string path = "/home/users/samuelli/Datasets/HD512_200/enstrophy";
+	//string pathCompare = "/home/users/samuelli/Datasets/HD512_500/enstrophy";
 	wav.SetPath( path );
 
 
 	for( int i = 0; i < total_steps / each_group; i++ )
 	{
 		wav.GenerateFilenames( name, i * each_group + startIdx );
-		wav.GenerateBkpFilenames( pathCompare, name, i * each_group + startIdx );
-		//wav.PrintFilenames();
+		//wav.GenerateBkpFilenames( pathCompare, name, i * each_group + startIdx );
+		wav.PrintFilenames();
+		/*
 		cout << "start Idx: " << i * each_group + startIdx << endl;
 		wav.StartMonitor();
-		wav.ParallelExec();
+		if( argc != 4 )
+			wav.ParallelExec();
+		else 
+		{
+			if	   ( d == 'X' )		wav.XDimParallelExec();
+			else if( d == 'Y' ) 	wav.YDimParallelExec();
+			else if( d == 'Z' ) 	wav.ZDimParallelExec();
+			else if( d == 'T' )		wav.TimeDimParallelExec();
+			else					wav.ParallelExec();
+		}
+		*/
 	}
-	
 
 }
