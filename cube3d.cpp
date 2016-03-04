@@ -39,7 +39,6 @@ Cube3D::Cube3D( string filename, string wavename,
     _NX = NX;
     _NY = NY;
     _NZ = NZ;
-    _L = NULL;
 
 	_NX_total = NX_total;
 	_NY_total = NY_total;
@@ -54,6 +53,8 @@ Cube3D::Cube3D( string filename, string wavename,
     _mw = new VAPoR::MatWaveWavedec( wavename );
     _nlevels = min( min(_mw->wmaxlev(NX), _mw->wmaxlev(NY)), _mw->wmaxlev(NZ));
     _clen = _mw->coefflength3( NX, NY, NZ, _nlevels );
+    _L = new size_t[ (21 * _nlevels) + 6 ];
+    _mw -> computeL3( _NX, _NY, _NZ, _nlevels, _L );
     assert( _clen == NX * NY * NZ );
     _C = new float[ _clen ];
     ReadFileChunck( _C );
@@ -513,7 +514,7 @@ Cube3D::Print10Elements()
 */
 }
 	
-
+/*
 int main( int argc, char* argv[] )
 {
 	string filename = argv[1];
@@ -552,3 +553,4 @@ int main( int argc, char* argv[] )
 
 	delete slice;
 }
+*/
