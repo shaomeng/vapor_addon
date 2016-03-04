@@ -42,7 +42,12 @@ public:
 	int ParallelExec();
 
 	/* only performs DWT in the time dimension */
-	int OneDimParallelExec();
+	int TimeDimParallelExec();
+
+	/* only performs DWT in the X, Y, or Z dimension */
+	void XDimParallelExec();
+	void YDimParallelExec();
+	void ZDimParallelExec();
 
 	void PrintBlockIndices();
 	void PrintFilenames();
