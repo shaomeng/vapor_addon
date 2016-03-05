@@ -359,6 +359,13 @@ Cube3D::Reconstruct( int ratio )
 
     return rc;
 }
+    
+float 
+Cube3D::GetCoeff( size_t x, size_t y, size_t z )
+{
+	size_t idx = z * _NX * _NY + y * _NX + x;
+	return GetCoeff( idx );
+}
 
 float
 Cube3D::GetCoeff( size_t idx )

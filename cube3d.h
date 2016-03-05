@@ -44,6 +44,7 @@ public:
     void ReconstructZ(int ratio);	// 1D reconstruction in X
 
     float GetCoeff( size_t idx );
+    float GetCoeff( size_t x, size_t y, size_t z );
     void PutCoeff( size_t idx, float c );
     void CullCoeffs( float t ); 		// the threshold, t, must be positive.
 	void GetMinMax( float  &min, float &max );
