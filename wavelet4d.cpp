@@ -70,7 +70,7 @@ FindRMS2( const double* arr, long len, long denominator)
 Wavelet4D::Wavelet4D( long NX, long NY, long NZ, long NT )
 {
 
-	_BLOCKDIM = 128;
+	_BLOCKDIM = 70;
 	_wavename = "bior4.4";
 	_cratio = 1;
 
@@ -82,6 +82,7 @@ Wavelet4D::Wavelet4D( long NX, long NY, long NZ, long NT )
 	_block_indices = NULL;
 	_path.clear();
 	CalcBlockIndices();
+	_reconstruct_buf = NULL;
 }
 
 Wavelet4D::~Wavelet4D()
@@ -89,6 +90,15 @@ Wavelet4D::~Wavelet4D()
 	if( _block_indices ) {
 		delete[] _block_indices;
 		_block_indices = NULL;
+	}
+	if( _reconstruct_buf ) {
+		for( long i = 0; i < _NT; i++ )
+			if( _reconstruct_buf[i] ) {
+				delete[] _reconstruct_buf[i];
+				_reconstruct_buf[i] = NULL;
+			}
+		delete[] _reconstruct_buf;
+		_reconstruct_buf = NULL;
 	}
 }
 
@@ -106,10 +116,10 @@ Wavelet4D::GenerateFilenames( const string &name, long idx)
 	char buf[256];
 	_filenames.clear();
 
-	int step = 1;
+	int step = 2;
 
 	for( long i = 0; i < _NT; i++ ) {
-		sprintf( buf, ".%04ld.out", i*step + idx);
+		sprintf( buf, "%04ld.float", i*step + idx);
 		string f = _path + "/" + name + buf;
 		_filenames.push_back( f );
 	}	
@@ -240,11 +250,10 @@ Wavelet4D::ParallelExec()
 		group -> Initialize();
 		group -> Decompose();		// All coefficients stored now!
 
-		/* Filename for output coefficients */
-#ifndef EVALUATE
+		/* Output coefficients 
 		string coeff_name = _filenames[0] + ".block" + to_string(i) + ".coeff";
 		group -> OutputFile( coeff_name, _cratio );
-#endif
+		*/
 
 #ifdef EVALUATE
 		group -> Reconstruct( _cratio );
@@ -305,6 +314,141 @@ Wavelet4D::ParallelExec()
 #endif
 
 	return 0;
+}
+
+void
+Wavelet4D::Output4DReconstruct()
+{
+	if( _reconstruct_buf == NULL ) 
+	{
+		_reconstruct_buf = new float*[ _NT ];
+		for( long i = 0; i < _NT; i++ )
+			_reconstruct_buf[i] = new float[ _NX * _NY * _NZ ];
+	}
+
+	/* * Each thread takes care of one index from _BLOCKNUM.  */
+	int nthreadSys = omp_get_max_threads();
+	int nthreads = (nthreadSys < _BLOCKNUM)? nthreadSys : _BLOCKNUM;
+	omp_set_num_threads( nthreads );
+
+	#pragma omp parallel for schedule( dynamic )
+	for( long i = 0; i < _BLOCKNUM; i++ )
+	{
+		Cube3D** slices = new Cube3D*[ _NT ];
+		SliceGroup* group = new SliceGroup( _wavename );
+
+		for( long t = 0; t < _NT; t++ )
+		{
+			slices[t] = new Cube3D( _filenames[t], _wavename, 
+					_BLOCKDIM, _BLOCKDIM, _BLOCKDIM, _NX, _NY, _NZ,
+					_block_indices[ 6*i ],   _block_indices[ 6*i+1 ],
+                    _block_indices[ 6*i+2 ], _block_indices[ 6*i+3 ],
+                    _block_indices[ 6*i+4 ], _block_indices[ 6*i+5 ] );
+
+			slices[t] -> Decompose();
+			group -> AddSlice( slices[t] );
+		}							
+		/* Temporal compression */
+		group -> Initialize();
+		group -> Decompose();		// All coefficients stored now!
+		group -> Reconstruct( _cratio );
+		group -> UpdateSlices();
+		for( long t = 0; t < _NT; t++ ) {
+			slices[t] -> Reconstruct(1);
+
+			for( long z = 0; z < _BLOCKDIM; z++ )
+				for( long y = 0; y < _BLOCKDIM; y++ )
+					for( long x = 0; x < _BLOCKDIM; x++ )
+					{
+						float v = slices[t] -> GetCoeff( x, y, z );
+						PutValToWrite( x + _block_indices[6*i],
+									   y + _block_indices[6*i+2],
+									   z + _block_indices[6*i+4],
+									   t, v );
+					}
+		}
+
+		if( group )				delete group;
+		for( long t = 0; t < _NT; t++ )
+			if( slices[t] ) 	delete slices[t];
+		if( slices ) 			delete[] slices;
+	}
+	/* OMP parallel section finish */
+
+
+	/* outputs files from 4D reconstruction onto disk */
+	for( long t = 0; t < _NT; t++ )
+	{
+		string ratio_str = to_string( _cratio );
+		string name3d = _filenames[t] + "." + ratio_str + "c4d";
+		FILE* f = fopen( name3d.c_str(), "wb" );
+		fwrite( _reconstruct_buf[t], sizeof(float), _NX*_NY*_NZ, f );
+		fclose(f);
+	}
+}
+
+
+
+void
+Wavelet4D::Output3DReconstruct()
+{
+	if( _reconstruct_buf == NULL ) 
+	{
+		_reconstruct_buf = new float*[ _NT ];
+		for( long i = 0; i < _NT; i++ )
+			_reconstruct_buf[i] = new float[ _NX * _NY * _NZ ];
+	}
+
+	/* * Each thread takes care of one index from _BLOCKNUM.  */
+	int nthreadSys = omp_get_max_threads();
+	int nthreads = (nthreadSys < _BLOCKNUM)? nthreadSys : _BLOCKNUM;
+	omp_set_num_threads( nthreads );
+
+	#pragma omp parallel for schedule( dynamic )
+	for( long i = 0; i < _BLOCKNUM; i++ )
+	{
+		Cube3D** slices = new Cube3D*[ _NT ];
+		SliceGroup* group = new SliceGroup( _wavename );
+
+		for( long t = 0; t < _NT; t++ )
+		{
+			slices[t] = new Cube3D( _filenames[t], _wavename, 
+					_BLOCKDIM, _BLOCKDIM, _BLOCKDIM, _NX, _NY, _NZ,
+					_block_indices[ 6*i ],   _block_indices[ 6*i+1 ],
+                    _block_indices[ 6*i+2 ], _block_indices[ 6*i+3 ],
+                    _block_indices[ 6*i+4 ], _block_indices[ 6*i+5 ] );
+
+			slices[t] -> Decompose();
+			slices[t] -> Reconstruct (_cratio);
+		
+			for( long z = 0; z < _BLOCKDIM; z++ )
+				for( long y = 0; y < _BLOCKDIM; y++ )
+					for( long x = 0; x < _BLOCKDIM; x++ )
+					{
+						float v = slices[t] -> GetCoeff( x, y, z );
+						PutValToWrite( x + _block_indices[6*i],
+									   y + _block_indices[6*i+2],
+									   z + _block_indices[6*i+4],
+									   t, v );
+					}
+		}							
+
+		if( group )				delete group;
+		for( long t = 0; t < _NT; t++ )
+			if( slices[t] ) 	delete slices[t];
+		if( slices ) 			delete[] slices;
+	}
+	/* OMP parallel section finish */
+
+	/* outputs files from 3D reconstruction onto disk */
+	for( long t = 0; t < _NT; t++ )
+	{
+		string ratio_str = to_string( _cratio );
+		string name3d = _filenames[t] + "." + ratio_str + "c3d";
+		FILE* f = fopen( name3d.c_str(), "wb" );
+		fwrite( _reconstruct_buf[t], sizeof(float), _NX*_NY*_NZ, f );
+		fclose(f);
+	}
 }
 
 int
@@ -573,4 +717,15 @@ Wavelet4D::StartMonitor()
 		}	
 
 	}
+}
+
+
+
+void 
+Wavelet4D::PutValToWrite( long x, long y, long z, long t, float v )
+{
+	assert( _reconstruct_buf    != NULL );
+	assert( _reconstruct_buf[t] != NULL );
+	long idx = z*_NX*_NY + y*_NX + x;
+	_reconstruct_buf[t][idx] = v;
 }

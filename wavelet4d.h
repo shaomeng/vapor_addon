@@ -21,10 +21,9 @@
 #include "cube3d.h"
 #include "slicegroup.h"
 
-#define EVALUATE
-
 #include <sys/stat.h>
 
+#define EVALUATE
 
 class Wavelet4D{
 
@@ -58,6 +57,10 @@ public:
 
 	void StartMonitor();
 
+	void Output3DReconstruct();
+	void Output4DReconstruct();
+	void PutValToWrite( long x, long y, long z, long t, float v );
+
 protected:
 	long _NX, _NY, _NZ;		// spatial dimensions
 	long _NT;				// temporal dimension
@@ -78,6 +81,8 @@ protected:
 
 	void CalcBlockIndices();
 
+	float** _reconstruct_buf;	// _NT bufs in total;
+								// each buf contains one reconstructed file
 };
 
 #endif

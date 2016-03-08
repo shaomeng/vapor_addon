@@ -35,7 +35,7 @@ VAPOR_LIB=${VAPOR_INSTALL}/lib
 VAPOR_BIN=${VAPOR_INSTALL}/bin
 
 john_time_comp: john_time_comp.cpp
-	$(CXX) john_time_comp.cpp -o bin/john_time_comp.o $(CXXFLAGS) -I${VAPOR_INC} -I. 
+	$(CXX) -c john_time_comp.cpp -o bin/john_time_comp.o $(CXXFLAGS) -I${VAPOR_INC} -I. 
 	$(CXX) bin/john_time_comp.o -o bin/john_time_comp $(LDFLAGS) -L${VAPOR_BIN} -L$(VAPOR_LIB) -lwasp -lcommon 
 
 cube3d.o: cube3d.cpp cube3d.h
