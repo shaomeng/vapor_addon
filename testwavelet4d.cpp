@@ -5,8 +5,9 @@ using std::string;
 
 int main(int argc, char* argv[] )
 {
-	int startIdx = 350;
-	int total_steps = 18;
+	int startIdx = 8502;
+	int increment = 2;
+	int total_steps = 500;
 	int each_group = 18;
 	int cratio = 8;
 	string name = "vortmag";
@@ -24,24 +25,24 @@ int main(int argc, char* argv[] )
 		name = argv[2];
 		d = argv[3][0];
 	}
-	Wavelet4D wav( 512, 512, 512, each_group);
+	Wavelet4D wav( 490, 490, 280, each_group);
 	wav.SetCRatio( cratio );
-	//string path = "/home/users/samuelli/Datasets/Orf/" + name + "_cropped";
-	string path = "/home/users/samuelli/Datasets/HD512_200/enstrophy";
+	string path = "/home/users/samuelli/Datasets/Orf/" + name + "_cropped";
 	//string pathCompare = "/home/users/samuelli/Datasets/HD512_500/enstrophy";
 	wav.SetPath( path );
 
-
 	for( int i = 0; i < total_steps / each_group; i++ )
 	{
-		wav.GenerateFilenames( name, i * each_group + startIdx );
+		wav.GenerateFilenames( name, i * increment * each_group + startIdx );
 		//wav.GenerateBkpFilenames( pathCompare, name, i * each_group + startIdx );
 		wav.PrintFilenames();
-		/*
 		cout << "start Idx: " << i * each_group + startIdx << endl;
 		wav.StartMonitor();
-		if( argc != 4 )
-			wav.ParallelExec();
+		if( argc < 4 )
+		{
+			wav.Output3DReconstruct();
+			wav.Output4DReconstruct();
+		}
 		else 
 		{
 			if	   ( d == 'X' )		wav.XDimParallelExec();
@@ -50,7 +51,6 @@ int main(int argc, char* argv[] )
 			else if( d == 'T' )		wav.TimeDimParallelExec();
 			else					wav.ParallelExec();
 		}
-		*/
 	}
 
 }

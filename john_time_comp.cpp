@@ -10,9 +10,9 @@
 using namespace VAPoR;
 
 
-const int NX = 64;
-const int NY = 64;
-const int NZ = 64;
+const int NX = 480;
+const int NY = 480;
+const int NZ = 280;
 bool KeepAppCoeff = false;
 
 
@@ -237,7 +237,8 @@ void test2dp1d(string wavename, const float *srcarr, float *dstarr, float cratio
 
 void compute_error(
     const float *data, const float *cdata, int nx, int ny, int nz,
-    double &l1, double &l2, double &lmax, double &rms
+    double &l1, double &l2, double &lmax, double &rms,
+	double &min, double &max 
 ) {
     l1 = 0.0;
     l2 = 0.0;
@@ -245,6 +246,8 @@ void compute_error(
     rms = 0.0;
     double sum = 0.0;
     double c = 0.0;
+	min = data[0];
+	max = data[0];
     for (int k=0; k<nz; k++) {
         for (int j=0; j<ny; j++) {
             for (int i=0; i<nx; i++) {
@@ -256,6 +259,11 @@ void compute_error(
                 double t = sum + y;
                 c = (t - sum ) - y;
                 sum = t;
+
+				if( data[k*nx*ny + j*nx + i] > max )
+					max = data[ k*nx*ny + j*nx + i ]; 
+				if( data[k*nx*ny + j*nx + i] < min )
+					min = data[ k*nx*ny + j*nx + i ]; 
             }
         }
     }
@@ -285,18 +293,20 @@ int main(int argc, char* argv[] ) {
 	cout << "Test 3d\n";
 	test3d(wname, srcarr, dstarr, cratio);
 
-    double l1, l2, lmax, rms;
+    double l1, l2, lmax, rms, min, max;
 	compute_error(
-		srcarr, dstarr, NX, NY, NZ, l1, l2, lmax, rms
+		srcarr, dstarr, NX, NY, NZ, l1, l2, lmax, rms, min, max
 	);
 
     cout << "L1 = " << l1 << endl;
     cout << "L2 = " << l2 << endl;
-    cout << "LMax = " << lmax << endl;
-    cout << "RMS = " << rms << endl;
+	printf("NRMSE = %e, NLMAX = %e\n", rms/(max-min), lmax/(max-min) );
+    //cout << "LMax = " << lmax << endl;
+    //cout << "RMS = " << rms << endl;
 	cout << endl;
 	cout << endl;
 	
+	/*
 	cout << "Test 2dp1d \n";
 	test2dp1d(wname, srcarr, dstarr, cratio);
 
@@ -310,6 +320,7 @@ int main(int argc, char* argv[] ) {
     cout << "RMS = " << rms << endl;
 	cout << endl;
 	cout << endl;
+	*/
 
     delete[] srcarr;
     delete[] dstarr;
