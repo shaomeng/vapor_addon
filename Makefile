@@ -24,7 +24,7 @@ endif
 
 john_time_comp: john_time_comp.cpp
 	$(CXX) -c john_time_comp.cpp -o bin/john_time_comp.o $(CXXFLAGS) -I${VAPOR_INSTALL}/include -I. 
-	$(CXX) bin/john_time_comp.o -o bin/john_time_comp $(LDFLAGS) -L$(VAPOR_INSTALL)/lib -lcommon -lvdf -L$(VAPOR_DEP_LIB) -lexpat -ludunits2 -lproj
+	$(CXX) bin/john_time_comp.o -o bin/john_time_comp $(LDFLAGS) -L$(VAPOR_INSTALL)/lib -lvdf -lcommon -L$(VAPOR_DEP_LIB) -lexpat -ludunits2 -lproj -lnetcdf
 
 cube3d.o: cube3d.cpp cube3d.h
 	$(CXX) -c cube3d.cpp -o cube3d.o $(CXXFLAGS) -I${VAPOR_INC} -I. 
