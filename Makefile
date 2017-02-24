@@ -1,4 +1,5 @@
 ARCH=$(shell uname)
+USER=$(shell whoami)
 
 CXXFLAGS=-O2 -std=c++11 -Wall -DMODELS -m64 -pthread
 LDFLAGS=
@@ -7,9 +8,14 @@ LDFLAGS=
 ifeq ($(ARCH), Linux)
 CC=gcc
 CXX=g++
-VAPOR_INSTALL=/home/users/samuelli/Tools/vapor-git/Install
-CXXFLAGS+=-DLINUX -D__USE_LARGEFILE64 -D__USE_LARGEFILE64 -pthread -DLinux -DOPENMP -openmp
-LDFLAGS+=-lrt -pthread -openmp -Wl,-rpath,$(VAPOR_INSTALL)/bin -Wl,-rpath,$(VAPOR_INSTALL)/lib
+ifeq ($(USER), shaomeng)  #NCAR
+VAPOR_INSTALL=/glade/u/home/shaomeng/lib_gnu/vapor-git
+else
+VAPOR_INSTALL=/home/users/samuelli/Install/vapor-git
+endif
+VAPOR_DEP_LIB=/glade/p/DASG/VAPOR/third-party/apps-2014/Linux_x86_64/lib
+CXXFLAGS+=-DLINUX -D__USE_LARGEFILE64 -D__USE_LARGEFILE64 -pthread -DLinux -DOPENMP -fopenmp
+LDFLAGS+=-lrt -pthread -fopenmp -Wl,-rpath,$(VAPOR_INSTALL)/lib
 else ifeq ($(ARCH), Darwin)
 CC=clang
 CXX=clang++
@@ -18,7 +24,7 @@ endif
 
 john_time_comp: john_time_comp.cpp
 	$(CXX) -c john_time_comp.cpp -o bin/john_time_comp.o $(CXXFLAGS) -I${VAPOR_INSTALL}/include -I. 
-	$(CXX) -v bin/john_time_comp.o -o bin/john_time_comp $(LDFLAGS) -L$(VAPOR_INSTALL)/lib -lvdf -lcommon -lvdf
+	$(CXX) bin/john_time_comp.o -o bin/john_time_comp $(LDFLAGS) -L$(VAPOR_INSTALL)/lib -lcommon -lvdf -L$(VAPOR_DEP_LIB) -lexpat -ludunits2 -lproj
 
 cube3d.o: cube3d.cpp cube3d.h
 	$(CXX) -c cube3d.cpp -o cube3d.o $(CXXFLAGS) -I${VAPOR_INC} -I. 

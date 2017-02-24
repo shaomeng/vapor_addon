@@ -11,7 +11,6 @@
 #endif
 
 #include "vapor/MatWaveWavedec.h"
-//using namespace VAPoR;
 
 
 const int NX = 10;
@@ -33,7 +32,7 @@ void test1d(std::string wavename, const float *srcarr, float *dstarr, float crat
 
 	for (size_t i=0; i<NX*NY*NZ; i++) dstarr[i] = 0.0;
 
-	VAPoR::MatWaveWavedec::MatWaveWavedec mw(wavename);
+	VAPoR::MatWaveWavedec mw(wavename);
 
 	// Compute # of wavelet decompositions. Same # along each 
 	// dimension
@@ -107,7 +106,7 @@ void test3d(std::string wavename, const T *srcarr, T *dstarr, float cratio ) {
 
 	for (size_t i=0; i<NX*NY*NZ; i++) dstarr[i] = 0.0;
 
-	VAPoR::MatWaveWavedec::MatWaveWavedec mw(wavename);
+	VAPoR::MatWaveWavedec mw(wavename);
 
 	// Compute # of wavelet decompositions. Same # along each 
 	// dimension
@@ -184,7 +183,7 @@ void test2d(std::string wavename, const T *srcarr, T *dstarr, float cratio,
 
 	// 2D transform first
 	//
-	VAPoR::MatWaveWavedec::MatWaveWavedec mw(wavename);
+	VAPoR::MatWaveWavedec mw(wavename);
 
 	size_t nlevels2d = min(mw.wmaxlev(dimX), mw.wmaxlev(dimY));
 
@@ -247,7 +246,7 @@ void test2dp1d(std::string wavename, const float *srcarr, float *dstarr, float c
 	// 
 	// 2D transform first
 	//
-	VAPoR::MatWaveWavedec::MatWaveWavedec mw(wavename);
+	VAPoR::MatWaveWavedec mw(wavename);
 
 	size_t nlevels2d = min(mw.wmaxlev(NX), mw.wmaxlev(NY));
 
