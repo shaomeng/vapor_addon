@@ -4,17 +4,8 @@
 
 #define FLOAT double
 
-int main(int argc, char** argv)
+void WriteGaussian2D( long int dimX, long int dimY, char* filename )
 {
-  if( argc != 4 )
-  {
-    printf("Usage: ./a.out dimX dimY output_filename\n");
-    return 1;
-  }
-  long int dimX   = atol( argv[1] ); 
-  long int dimY   = atol( argv[2] ); 
-  char* filename  = argv[3];
-
   // 2D gaussian parameters
   double amp     = 6400.0;
   double x0      = (double)dimX / 2.0;  // center
@@ -41,6 +32,41 @@ int main(int argc, char** argv)
   fclose( outFile );
 
   delete[] buffer;
+
+}
+
+void WriteToy3D( long int dimX, long int dimY, long int dimZ, char* filename )
+{
+  long int totalLen = dimX * dimY * dimZ;
+  FLOAT* buffer = new FLOAT[ totalLen ];
+  for( long int i = 0; i < totalLen; i++ )
+  {
+    long int z = i / (dimX * dimY);
+    long int y = (i - z * dimX * dimY) / dimX;
+    long int x = i % dimX;
+    buffer[i]  = x * 100.0 + y * 10.0 + z;   // 3-digit xyz when all x, y, z are between 0 and 9
+  }  
+
+  FILE* outFile = fopen( filename, "wb" );
+  fwrite( buffer, sizeof(FLOAT), dimX * dimY, outFile );
+  fclose( outFile );
+
+  delete[] buffer;
+}
+
+int main(int argc, char** argv)
+{
+  if( argc != 5 )
+  {
+    printf("Usage: ./a.out  dimX  dimY  dimZ  output_filename\n");
+    return 1;
+  }
+  long int dimX   = atol( argv[1] ); 
+  long int dimY   = atol( argv[2] ); 
+  long int dimZ   = atol( argv[3] ); 
+  char* filename  = argv[4];
+
+  WriteToy3D( dimX, dimY, dimZ, filename );
 
   return 0;
 }

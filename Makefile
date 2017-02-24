@@ -1,31 +1,24 @@
-CC=gcc
-CXX=g++
-CXXFLAGS=-O2 -std=c++0x -Wall -DMODELS -m64 -g
-LDFLAGS=-m64
-
 ARCH=$(shell uname)
 
+CXXFLAGS=-O2 -std=c++11 -Wall -DMODELS -m64 -pthread
+LDFLAGS=
+
+
 ifeq ($(ARCH), Linux)
+CC=gcc
+CXX=g++
 VAPOR_INSTALL=/home/users/samuelli/Tools/vapor-git/Install
-CXXFLAGS+=-DLINUX -D__USE_LARGEFILE64 -D__USE_LARGEFILE64 -pthread -DLinux
-LDFLAGS+=-lrt -pthread -Wl,-rpath,$(VAPOR_INSTALL)/bin -Wl,-rpath,$(VAPOR_INSTALL)/lib
+CXXFLAGS+=-DLINUX -D__USE_LARGEFILE64 -D__USE_LARGEFILE64 -pthread -DLinux -DOPENMP -openmp
+LDFLAGS+=-lrt -pthread -openmp -Wl,-rpath,$(VAPOR_INSTALL)/bin -Wl,-rpath,$(VAPOR_INSTALL)/lib
+else ifeq ($(ARCH), Darwin)
+CC=clang
+CXX=clang++
+VAPOR_INSTALL=/Users/shaomeng/Install/vapor-git
 endif
 
-NETCDF_INSTALL=/opt/apps/gcc-4.8/netcdf-4.4.1
-NETCDF_INC=${NETCDF_INSTALL}/include
-NETCDF_LIB=${NETCDF_INSTALL}/lib
-
-HDF5_INSTALL=/opt/apps/hdf5-1.8.17
-HDF5_INC=${HDF5_INSTALL}/include
-HDF5_LIB=${HDF5_INSTALL}/lib
-
-VAPOR_INC=${VAPOR_INSTALL}/include
-VAPOR_LIB=${VAPOR_INSTALL}/lib
-VAPOR_BIN=${VAPOR_INSTALL}/bin
-
 john_time_comp: john_time_comp.cpp
-	$(CXX) -c john_time_comp.cpp -o bin/john_time_comp.o -fopenmp $(CXXFLAGS) -I${VAPOR_INC} -I. 
-	$(CXX) bin/john_time_comp.o -o bin/john_time_comp -fopenmp $(LDFLAGS) -L$(VAPOR_LIB) -lwasp -lcommon 
+	$(CXX) -c john_time_comp.cpp -o bin/john_time_comp.o $(CXXFLAGS) -I${VAPOR_INSTALL}/include -I. 
+	$(CXX) -v bin/john_time_comp.o -o bin/john_time_comp $(LDFLAGS) -L$(VAPOR_INSTALL)/lib -lvdf -lcommon -lvdf
 
 cube3d.o: cube3d.cpp cube3d.h
 	$(CXX) -c cube3d.cpp -o cube3d.o $(CXXFLAGS) -I${VAPOR_INC} -I. 

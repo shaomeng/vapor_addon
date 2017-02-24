@@ -6,15 +6,17 @@
 #include <vector>
 #include <algorithm>
 #include <sys/time.h>
+#ifdef   OPENMP
 #include <omp.h>
+#endif
 
 #include "vapor/MatWaveWavedec.h"
-using namespace VAPoR;
+//using namespace VAPoR;
 
 
-const int NX = 18;
-const int NY = 1;
-const int NZ = 1;
+const int NX = 10;
+const int NY = 10;
+const int NZ = 10;
 bool KeepAppCoeff = false;
 
 #define float double
@@ -27,11 +29,11 @@ inline bool my_compare(const T &x1, const T &x2) {
 //
 // Compress and decompress a 1D array
 //
-void test1d(string wavename, const float *srcarr, float *dstarr, float cratio ) {
+void test1d(std::string wavename, const float *srcarr, float *dstarr, float cratio ) {
 
 	for (size_t i=0; i<NX*NY*NZ; i++) dstarr[i] = 0.0;
 
-	MatWaveWavedec mw(wavename);
+	VAPoR::MatWaveWavedec::MatWaveWavedec mw(wavename);
 
 	// Compute # of wavelet decompositions. Same # along each 
 	// dimension
@@ -56,8 +58,8 @@ void test1d(string wavename, const float *srcarr, float *dstarr, float cratio ) 
 	int rc = mw.wavedec(srcarr, NX* NY* NZ, nlevels, C, L);
 	assert (rc>=0);
 
-for( size_t i = 0; i < NX* NY* NZ; i++ )
-  cout << C[i] << endl;
+  for( size_t i = 0; i < NX* NY* NZ; i++ )
+    cout << C[i] << endl;
 
   size_t NumCoeff = (float) (NX*NY*NZ) / cratio;
 
@@ -73,7 +75,7 @@ for( size_t i = 0; i < NX* NY* NZ; i++ )
 
 	size_t ti = NumCoeff - 1;
 
-	double threshold  = sortedC[ti];
+	float threshold  = sortedC[ti];
 
 	// Zero out wavelet coefficients that are smaller than threshold
 	//
@@ -100,11 +102,12 @@ for( size_t i = 0; i < NX* NY* NZ; i++ )
 //
 // Compress and decompress a 3D volume using a 3D wavelet transform
 //
-void test3d(string wavename, const float *srcarr, float *dstarr, float cratio ) {
+template< typename T>
+void test3d(std::string wavename, const T *srcarr, T *dstarr, float cratio ) {
 
 	for (size_t i=0; i<NX*NY*NZ; i++) dstarr[i] = 0.0;
 
-	MatWaveWavedec mw(wavename);
+	VAPoR::MatWaveWavedec::MatWaveWavedec mw(wavename);
 
 	// Compute # of wavelet decompositions. Same # along each 
 	// dimension
@@ -112,9 +115,10 @@ void test3d(string wavename, const float *srcarr, float *dstarr, float cratio ) 
 	size_t nlevels = min(
 		min(mw.wmaxlev(NX), mw.wmaxlev(NY)), mw.wmaxlev(NZ)
 	);
+  nlevels = 1;
 
 	size_t clen = mw.coefflength3(NX, NY, NZ, nlevels);
-	float *C = new float[clen];
+	T *C = new float[clen];
 	assert(C);
 
 	size_t L[ (21*nlevels) + 6];
@@ -138,7 +142,7 @@ void test3d(string wavename, const float *srcarr, float *dstarr, float cratio ) 
     // sort the coefficients  and find the threshold for culling
 	  // coefficients.
     //
-   	vector <float> sortedC; 
+   	vector <T> sortedC; 
     for (size_t i=startCoeffIdx; i<clen; i++)  sortedC.push_back(C[i]);
     sort(sortedC.begin(), sortedC.end(), my_compare<float>);
 
@@ -146,7 +150,7 @@ void test3d(string wavename, const float *srcarr, float *dstarr, float cratio ) 
 
 	size_t ti = NumCoeff - startCoeffIdx - 1;
 
-	double threshold  = sortedC[ti];
+	T threshold  = sortedC[ti];
 
 	// Zero out wavelet coefficients that are smaller than threshold
 	//
@@ -172,7 +176,7 @@ void test3d(string wavename, const float *srcarr, float *dstarr, float cratio ) 
 
 // Test 2d dwt, and print out the coefficients
 template< typename T >
-void test2d(string wavename, const T *srcarr, T *dstarr, float cratio,
+void test2d(std::string wavename, const T *srcarr, T *dstarr, float cratio,
             size_t dimX, size_t dimY) 
 {
 
@@ -180,7 +184,7 @@ void test2d(string wavename, const T *srcarr, T *dstarr, float cratio,
 
 	// 2D transform first
 	//
-	MatWaveWavedec mw(wavename);
+	VAPoR::MatWaveWavedec::MatWaveWavedec mw(wavename);
 
 	size_t nlevels2d = min(mw.wmaxlev(dimX), mw.wmaxlev(dimY));
 
@@ -235,7 +239,7 @@ void test2d(string wavename, const T *srcarr, T *dstarr, float cratio,
 // transform along X and Y axes, followed by a 1D transform along
 // the Z axis.
 //
-void test2dp1d(string wavename, const float *srcarr, float *dstarr, float cratio) 
+void test2dp1d(std::string wavename, const float *srcarr, float *dstarr, float cratio) 
 {
 
 	for (size_t i=0; i<NX*NY*NZ; i++) dstarr[i] = 0.0;
@@ -243,7 +247,7 @@ void test2dp1d(string wavename, const float *srcarr, float *dstarr, float cratio
 	// 
 	// 2D transform first
 	//
-	MatWaveWavedec mw(wavename);
+	VAPoR::MatWaveWavedec::MatWaveWavedec mw(wavename);
 
 	size_t nlevels2d = min(mw.wmaxlev(NX), mw.wmaxlev(NY));
 
@@ -375,7 +379,7 @@ void test2dp1d(string wavename, const float *srcarr, float *dstarr, float cratio
 
 template< typename T >
 void compute_error(
-    const T *data, const T *cdata, int nx, int ny, int nz )
+    const T *data, const T *cdata, long int nx, long int ny, long int nz )
     //double &l1, double &l2, double &lmax, double &rms,
   	//double &min, double &max ) 
 {
@@ -436,7 +440,7 @@ void RectangleCopy( const T* src, size_t srcDimX, size_t srcDimY,
 
 
 template< typename T >
-void test2D_openmp( string wname, const T* srcarr, T* dstarr, float cratio, 
+void test2D_openmp( std::string wname, const T* srcarr, T* dstarr, float cratio, 
                     size_t dimX, size_t dimY, size_t nblocksX, size_t nblocksY )
 {
   assert( dimX % nblocksX == 0 );
@@ -456,11 +460,15 @@ void test2D_openmp( string wname, const T* srcarr, T* dstarr, float cratio,
       indices[idx * 2 + 1] = blockDimY * y;       // startY
     }
 
+#ifdef OPENMP
   #pragma omp parallel for
+#endif
   for( size_t i = 0; i < nblocks; i++ )
   {
+#ifdef OPENMP
     if( i == 0 )
       cout << "number of threads: " <<  omp_get_num_threads() << endl;
+#endif
     
     T* inBuf  = new T[ blockDimX * blockDimY ];
     T* outBuf = new T[ blockDimX * blockDimY ];
@@ -485,18 +493,15 @@ int main(int argc, char* argv[] ) {
 
 	assert(argc == 3);
     float cratio = atof( argv[1] );
-	string file = argv[2];
+	std::string file = argv[2];
 
-  size_t dimX = 32768;
-  size_t dimY = 32768;
-
-	double *srcarr = new double[dimX * dimY];
-	double *dstarr = new double[dimX * dimY];
+	double *srcarr = new double[NX * NY * NZ];
+	double *dstarr = new double[NX * NY * NZ];
 
 	FILE *fp = fopen(file.c_str(), "r");
-  size_t rc = fread(srcarr, sizeof(double), dimX * dimY, fp);
+  size_t rc = fread(srcarr, sizeof(double), NX * NY * NZ, fp);
   fclose(fp);
-  assert (rc == dimX * dimY);
+  assert (rc == NX * NY * NZ);
 
   /*size_t dimX = 20;
   size_t dimY = 20;
@@ -508,13 +513,13 @@ int main(int argc, char* argv[] ) {
     dstarr[i] = 0.0;
   }*/
 
-	string wname = "bior4.4";
+	std::string wname = "bior4.4";
 	cout << "Test 2d...\n";
   
   //test2d( wname, srcarr, dstarr, cratio, dimX, dimY );
   struct timeval start, end;
   gettimeofday( &start, NULL );
-  test2D_openmp( wname, srcarr, dstarr, cratio, dimX, dimY, 16, 16 );
+  test3d( wname, srcarr, dstarr, cratio );
   gettimeofday( &end, NULL );
   double t = (double)( (end.tv_sec * 1000000 + end.tv_usec) -
              (start.tv_sec * 1000000 + start.tv_usec) )/1000000.0;
@@ -522,7 +527,7 @@ int main(int argc, char* argv[] ) {
 
 	//test1d(wname, srcarr, dstarr, cratio);
 
-	compute_error( srcarr, dstarr, dimX, dimY, 1 ); 
+	compute_error( srcarr, dstarr, NX, NY, NZ ); 
 
 
   delete[] srcarr;
