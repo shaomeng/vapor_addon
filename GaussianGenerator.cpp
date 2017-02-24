@@ -2,7 +2,7 @@
 #include "cstdio"
 #include "cmath"
 
-#define FLOAT double
+#define FLOAT float
 
 void WriteGaussian2D( long int dimX, long int dimY, char* filename )
 {
@@ -48,7 +48,7 @@ void WriteToy3D( long int dimX, long int dimY, long int dimZ, char* filename )
   }  
 
   FILE* outFile = fopen( filename, "wb" );
-  fwrite( buffer, sizeof(FLOAT), dimX * dimY, outFile );
+  fwrite( buffer, sizeof(FLOAT), dimX * dimY * dimZ, outFile );
   fclose( outFile );
 
   delete[] buffer;
