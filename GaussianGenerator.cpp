@@ -35,8 +35,17 @@ void WriteGaussian2D( long int dimX, long int dimY, char* filename )
 
 }
 
-void WriteToy3D( long int dimX, long int dimY, long int dimZ, char* filename )
+void WriteGaussian3D( long int dimX, long int dimY, long int dimZ, char* filename )
 {
+  FLOAT amp = 10.0;
+  FLOAT sigmaX  = (FLOAT)dimX / 4.0;  
+  FLOAT sigmaY  = (FLOAT)dimY / 4.0;  
+  FLOAT sigmaZ  = (FLOAT)dimZ / 4.0;  
+  FLOAT sigmaX2 = sigmaX * sigmaX * 2.0;
+  FLOAT sigmaY2 = sigmaY * sigmaY * 2.0;
+  FLOAT sigmaZ2 = sigmaZ * sigmaZ * 2.0;
+  FLOAT EulerConstant = exp(1.0);
+
   long int totalLen = dimX * dimY * dimZ;
   FLOAT* buffer = new FLOAT[ totalLen ];
   for( long int i = 0; i < totalLen; i++ )
@@ -44,7 +53,10 @@ void WriteToy3D( long int dimX, long int dimY, long int dimZ, char* filename )
     long int z = i / (dimX * dimY);
     long int y = (i - z * dimX * dimY) / dimX;
     long int x = i % dimX;
-    buffer[i]  = x * 100.0 + y * 10.0 + z;   // 3-digit xyz when all x, y, z are between 0 and 9
+    FLOAT   xf = (FLOAT)x - (FLOAT)dimX / 2;
+    FLOAT   yf = (FLOAT)y - (FLOAT)dimY / 2;
+    FLOAT   zf = (FLOAT)z - (FLOAT)dimZ / 2;
+    buffer[i]  = amp * pow( EulerConstant, -1.0 * (xf*xf/sigmaX2 + yf*yf/sigmaY2 + zf*zf/sigmaZ2) );
   }  
 
   FILE* outFile = fopen( filename, "wb" );
@@ -66,7 +78,7 @@ int main(int argc, char** argv)
   long int dimZ   = atol( argv[3] ); 
   char* filename  = argv[4];
 
-  WriteToy3D( dimX, dimY, dimZ, filename );
+  WriteGaussian3D( dimX, dimY, dimZ, filename );
 
   return 0;
 }
