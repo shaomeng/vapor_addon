@@ -30,7 +30,21 @@ void printPlaneX( const T* buf, long int x ) 		// prints a plane perpendicular t
 		printf("y = %ld:    ", y );
 		for( long int z = 0; z < NZ; z++ )
 		{
-			printf("%f ", buf[z * NX * NY + y * NX + x] );	
+			printf("%.8f ", buf[z * NX * NY + y * NX + x] );	
+		}	
+		printf("\n");
+	}
+}
+
+template< typename T>
+void printPlaneZ( const T* buf, long int z ) 		// prints a plane perpendicular to Z axis.
+{
+	for( long int y = NY - 1; y >= 0; y-- )
+	{
+		printf("y = %ld:    ", y );
+		for( long int x = 0; x < NX; x++ )
+		{
+			printf("%.8f ", buf[z * NX * NY + y * NX + x] );	
 		}	
 		printf("\n");
 	}
@@ -41,7 +55,7 @@ void printPlaneX( const T* buf, long int x ) 		// prints a plane perpendicular t
 // Compress and decompress a 3D volume using a 3D wavelet transform
 //
 template< typename T>
-void test3d(std::string wavename, const T *srcarr, T *dstarr, float cratio ) 
+void test3d(const std::string &wavename, const T *srcarr, T *dstarr, float cratio ) 
 {
 	for (size_t i=0; i<NX*NY*NZ; i++) dstarr[i] = 0.0;
 
@@ -72,8 +86,6 @@ void test3d(std::string wavename, const T *srcarr, T *dstarr, float cratio )
 	if (KeepAppCoeff) startCoeffIdx = L[0]*L[1]*L[2];
 	int rc = mw.wavedec3(srcarr, NX, NY, NZ, nlevels, C, L);
 	assert (rc>=0);
-
-	printPlaneX( C, 0 );
 
   size_t NumCoeff = (float) (NX*NY*NZ) / cratio;
 	assert(NumCoeff >= startCoeffIdx);
@@ -109,6 +121,167 @@ void test3d(std::string wavename, const T *srcarr, T *dstarr, float cratio )
 	// Inverse DWT
 	//
 	mw.waverec3(C,L,nlevels,dstarr);	
+
+  delete[] C;
+}
+
+
+//
+// Compress and decompress a 3D volume using three 1D wavelet transform
+//
+template< typename T>
+void SamTest3d(const std::string &wavename, const T *srcarr, T *dstarr, float cratio ) 
+{
+	for (size_t i=0; i<NX*NY*NZ; i++) dstarr[i] = 0.0;
+
+	VAPoR::MatWaveWavedec mw(wavename);
+  size_t nlevels = 1;
+	size_t L[ nlevels + 2 ];
+	mw.computeL(NX * NY * NZ, nlevels, L);
+  T* C = new T[ NX*NY*NZ ];
+
+printPlaneZ( srcarr, 9 );
+
+  // 
+  // 1 level 1D transform along X
+  //
+  {
+  T* inBuf  = new T[NX];
+  T* outBuf = new T[NX];
+  for( size_t z = 0; z < NZ; z++ )
+    for( size_t y = 0; y < NY; y++ )
+    {
+      for( size_t x = 0; x < NX; x++ )
+        inBuf[x] = srcarr[ z*NX*NY + y*NX + x ];
+      mw.wavedec( inBuf, NX, nlevels, outBuf, L );
+      for( size_t x = 0; x < NX; x++ )
+        C[ z*NX*NY + y*NX + x ] = outBuf[x];
+    }
+  delete[] inBuf;
+  delete[] outBuf;
+  }
+  // 
+  // 1 level 1D transform along Y
+  //
+  {
+  T* inBuf  = new T[NY];
+  T* outBuf = new T[NY];
+  for( size_t z = 0; z < NZ; z++ )
+    for( size_t x = 0; x < NX; x++ )
+    {
+      for( size_t y = 0; y < NY; y++ )
+        inBuf[y] = C[ z*NX*NY + y*NX + x ];
+      mw.wavedec( inBuf, NY, nlevels, outBuf, L );
+      for( size_t y = 0; y < NY; y++ )
+        C[ z*NX*NY + y*NX + x ] = outBuf[y];
+    }
+  delete[] inBuf;
+  delete[] outBuf;
+  } 
+  // 
+  // 1 level 1D transform along Z
+  //
+  {
+  T* inBuf  = new T[NZ];
+  T* outBuf = new T[NZ];
+  for( size_t y = 0; y < NY; y++ )
+    for( size_t x = 0; x < NX; x++ )
+    {
+      for( size_t z = 0; z < NZ; z++ )
+        inBuf[z] = C[ z*NX*NY + y*NX + x ];
+      mw.wavedec( inBuf, NZ, nlevels, outBuf, L );
+      for( size_t z = 0; z < NZ; z++ )
+        C[ z*NX*NY + y*NX + x ] = outBuf[z];
+    }
+  delete[] inBuf;
+  delete[] outBuf;
+  } 
+
+	//
+	// sort the coefficients  and find the threshold for culling
+	// coefficients.
+	//
+  if( cratio > 1 )
+  {
+	vector <T> sortedC; 
+	for (size_t i=0; i<NX*NY*NZ; i++)  
+    sortedC.push_back(C[i]);
+	sort(sortedC.begin(), sortedC.end(), my_compare<T>);
+
+	cout << "sortedC.size() = " << sortedC.size() << endl;
+	size_t ti = NX*NY*NZ - 1;
+	T threshold  = sortedC[ti];
+	//
+	// Zero out wavelet coefficients that are smaller than threshold
+	cout << "ti " << ti << endl;
+	cout << "threshold  " << threshold  << endl;
+    size_t should_squash = NX*NY*NZ - NX*NY*NZ / cratio;    // should squash this many
+	size_t squashed = 0;
+	for (size_t i=0; i<NX*NY*NZ; i++) {
+		if (fabs(C[i]) <= fabs(threshold) && squashed <= should_squash) {
+			squashed += 1;
+			C[i] = 0;
+		}
+	}
+	cout << "squashed " << squashed << endl;
+  }
+
+  // 
+  // 1 level 1D inverse transform along Z
+  //
+  {
+  T* inBuf  = new T[NZ];
+  T* outBuf = new T[NZ];
+  for( size_t y = 0; y < NY; y++ )
+    for( size_t x = 0; x < NX; x++ )
+    {
+      for( size_t z = 0; z < NZ; z++ )
+        inBuf[z] = C[ z*NX*NY + y*NX + x ];
+      mw.waverec( inBuf, L, nlevels, outBuf );
+      for( size_t z = 0; z < NZ; z++ )
+        C[ z*NX*NY + y*NX + x ] = outBuf[z];
+    }
+  delete[] inBuf;
+  delete[] outBuf;
+  } 
+
+  // 
+  // 1 level 1D inverse transform along Y
+  //
+  {
+  T* inBuf  = new T[NY];
+  T* outBuf = new T[NY];
+  for( size_t z = 0; z < NZ; z++ )
+    for( size_t x = 0; x < NX; x++ )
+    {
+      for( size_t y = 0; y < NY; y++ )
+        inBuf[y] = C[ z*NX*NY + y*NX + x ];
+      mw.waverec( inBuf, L, nlevels, outBuf );
+      for( size_t y = 0; y < NY; y++ )
+        C[ z*NX*NY + y*NX + x ] = outBuf[y];
+    }
+  delete[] inBuf;
+  delete[] outBuf;
+  } 
+
+  // 
+  // 1 level 1D inverse transform along X
+  //
+  {
+  T* inBuf  = new T[NX];
+  T* outBuf = new T[NX];
+  for( size_t z = 0; z < NZ; z++ )
+    for( size_t y = 0; y < NY; y++ )
+    {
+      for( size_t x = 0; x < NX; x++ )
+        inBuf[x] = C[ z*NX*NY + y*NX + x ];
+      mw.waverec( inBuf, L, nlevels, outBuf );
+      for( size_t x = 0; x < NX; x++ )
+        dstarr[ z*NX*NY + y*NX + x ] = outBuf[x];
+    }
+  delete[] inBuf;
+  delete[] outBuf;
+  }
 
   delete[] C;
 }
@@ -185,7 +358,7 @@ int main(int argc, char* argv[] ) {
   float cratio = atof( argv[1] );
 	std::string file = argv[2];
 
-	typedef double T;
+	typedef float T;
 	T *srcarr = new T[NX * NY * NZ];
 	T *dstarr = new T[NX * NY * NZ];
 
@@ -194,12 +367,12 @@ int main(int argc, char* argv[] ) {
   fclose(fp);
   assert (rc == NX * NY * NZ);
 
-	std::string wname = "bior4.4";
+	std::string wname = "bior2.2";
   
   //test2d( wname, srcarr, dstarr, cratio, dimX, dimY );
   struct timeval start, end;
   gettimeofday( &start, NULL );
-  test3d( wname, srcarr, dstarr, cratio );
+  SamTest3d( wname, srcarr, dstarr, cratio );
   gettimeofday( &end, NULL );
   double t = (double)( (end.tv_sec * 1000000 + end.tv_usec) -
              (start.tv_sec * 1000000 + start.tv_usec) )/1000000.0;

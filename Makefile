@@ -20,12 +20,13 @@ LDFLAGS+=-lrt -pthread -fopenmp -Wl,-rpath,$(VAPOR_INSTALL)/lib -Wl,-rpath,$(VAP
 else ifeq ($(ARCH), Darwin)
 CC=clang
 CXX=clang++
+VAPOR_DEP_LIB=/glade/p/DASG/VAPOR/third-party/apps-2017/Darwin_x86_64
 VAPOR_INSTALL=/Users/shaomeng/Install/vapor-git
 endif
 
 john_time_comp: john_time_comp.cpp
 	$(CXX) -c john_time_comp.cpp -o bin/john_time_comp.o $(CXXFLAGS) -I${VAPOR_INSTALL}/include -I. 
-	$(CXX) bin/john_time_comp.o -o bin/john_time_comp $(LDFLAGS) -L$(VAPOR_INSTALL)/lib -lvdf -lcommon -lexpat -L$(VAPOR_DEP_LIB)/lib -ludunits2 -lproj -lnetcdf
+	$(CXX) bin/john_time_comp.o -o bin/john_time_comp $(LDFLAGS) -L$(VAPOR_INSTALL)/lib -lvdf -lcommon -lexpat -L$(VAPOR_DEP_LIB)/lib -ludunits2 -lproj -lnetcdf -lvdf
 
 cube3d.o: cube3d.cpp cube3d.h
 	$(CXX) -c cube3d.cpp -o cube3d.o $(CXXFLAGS) -I${VAPOR_INC} -I. 

@@ -66,6 +66,17 @@ void WriteGaussian3D( long int dimX, long int dimY, long int dimZ, char* filenam
   delete[] buffer;
 }
 
+void WriteIncrement( long int totalLen, char* filename )
+{
+  FLOAT* buffer = new FLOAT[ totalLen ];
+  for( long int i = 0; i < totalLen; i++ )
+    buffer[i] = (FLOAT)i; 
+  FILE* outFile = fopen( filename, "wb" );
+  fwrite( buffer, sizeof(FLOAT), totalLen, outFile );
+  fclose( outFile );
+  delete[] buffer;
+}
+
 int main(int argc, char** argv)
 {
   if( argc != 5 )
@@ -79,6 +90,7 @@ int main(int argc, char** argv)
   char* filename  = argv[4];
 
   WriteGaussian3D( dimX, dimY, dimZ, filename );
+  //WriteIncrement( dimX * dimY * dimZ, filename );
 
   return 0;
 }
